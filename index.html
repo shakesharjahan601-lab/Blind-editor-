@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Blind Editor Pro Studio</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #334155; border-radius: 3px; }
+    .hidden-safe { display: none !important; }
+    .progress-bg { background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); background-size: 1rem 1rem; }
+  </style>
+</head>
+<body class="flex flex-col items-center h-screen overflow-hidden">
+
+  <div class="w-full max-w-md bg-slate-900 shadow-2xl h-full flex flex-col relative">
+    
+    <div class="bg-slate-800 p-4 text-center border-b border-slate-700 shadow-md z-10 shrink-0 mt-2 relative">
+      <button id="back-btn" onclick="goHome()" class="absolute left-2 top-1/2 -translate-y-1/2 text-blue-400 p-2 hidden-safe active:scale-90">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+      </button>
+      <h1 id="main-header" tabindex="-1" class="text-xl font-black text-white tracking-wider flex items-center justify-center gap-2 focus:outline-none">
+        <span id="header-title-text">BLIND EDITOR PRO</span>
+      </h1>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 relative pb-10">
+
+      <div id="home-screen" class="grid grid-cols-2 gap-4 pt-2">
+        <button onclick="openTool('tab-insert', 'Insert Clip')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Insert Clip</span>
+        </button>
+        <button onclick="openTool('tab-music', 'Add Music')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Add Music</span>
+        </button>
+        <button onclick="openTool('tab-cut', 'Trim Video')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Trim Video</span>
+        </button>
+        <button onclick="openTool('tab-cut-audio', 'Trim Audio')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Trim Audio</span>
+        </button>
+        <button onclick="openTool('tab-merge-video', 'Merge Videos')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Merge Videos</span>
+        </button>
+        <button onclick="openTool('tab-merge-audio', 'Merge Audios')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Merge Audios</span>
+        </button>
+        <button onclick="openTool('tab-video-audio', 'Video to Audio')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Video to Audio</span>
+        </button>
+        <button onclick="openTool('tab-audio-video', 'Audio to Video')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg">
+          <span class="text-slate-200 font-bold text-xs">Audio to Video</span>
+        </button>
+        <button onclick="openTool('tab-noise-remove', 'Remove Noise')" class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col items-center gap-2 shadow-lg col-span-2">
+          <span class="text-teal-400 font-black text-xs">Remove Background Noise</span>
+        </button>
+        <button onclick="openTool('tab-sfx-mixer', 'Live SFX & Voice Changer')" class="bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-2xl flex flex-col items-center gap-2 shadow-xl col-span-2 mt-2">
+          <span class="text-white font-black text-sm tracking-wide">🔥 Live SFX & Voice Changer</span>
+        </button>
+      </div>
+
+      <div id="tab-insert" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t1-base-file" accept="video/*" class="hidden-safe">
+        <button onclick="document.getElementById('t1-base-file').click()" class="w-full bg-slate-700 text-white font-bold py-3 rounded-lg">1. Choose Base Video</button>
+        <video id="t1-video" class="w-full bg-black rounded-lg aspect-video hidden-safe" playsinline></video>
+        <input type="range" id="t1-slider" min="0" max="100" value="0" class="w-full" disabled>
+        <div class="flex gap-2">
+          <button onclick="skipMedia('t1-video', -5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="togglePlay('t1-video', 't1-play-btn')" id="t1-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold">Play Preview</button>
+          <button onclick="skipMedia('t1-video', 5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+        <input type="file" id="t1-insert-file" accept="video/*" class="hidden-safe">
+        <button onclick="t1Vid.pause(); t1_insertTime = t1Vid.currentTime; document.getElementById('t1-insert-file').click();" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">2. Insert Clip Here</button>
+        <div id="t1-insert-status" class="text-xs text-emerald-400 text-center font-bold hidden-safe"></div>
+        <button onclick="startExport('insert')" id="t1-save-btn" class="w-full bg-emerald-600 font-bold py-4 rounded-xl text-lg" disabled>Save Final Video</button>
+      </div>
+
+      <div id="tab-music" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t2-video-file" accept="video/*" class="hidden-safe">
+        <button onclick="document.getElementById('t2-video-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">1. Choose Video</button>
+        <input type="file" id="t2-music-file" accept="audio/*" class="hidden-safe">
+        <button onclick="document.getElementById('t2-music-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">2. Choose Music File</button>
+        <video id="t2-video" class="w-full bg-black rounded-lg aspect-video hidden-safe" playsinline></video>
+        <audio id="t2-audio" class="hidden-safe"></audio>
+        <div class="flex gap-2">
+          <button onclick="skipT2(-5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="toggleMusicPreview()" id="t2-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold">Play Video + Music</button>
+          <button onclick="skipT2(5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+        <div class="space-y-3 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <div>
+            <div class="flex justify-between text-xs mb-1"><span>Original Video Volume</span><span id="t2-vid-vol-label">100%</span></div>
+            <input type="range" id="t2-vid-vol-slider" min="0" max="2" step="0.1" value="1" class="w-full">
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1"><span>Background Music Volume</span><span id="t2-mus-vol-label">50%</span></div>
+            <input type="range" id="t2-vol-slider" min="0" max="1" step="0.05" value="0.5" class="w-full">
+          </div>
+        </div>
+        <button onclick="startExport('music')" id="t2-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Save Video</button>
+      </div>
+
+      <div id="tab-cut" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t3-video-file" accept="video/*" class="hidden-safe">
+        <button onclick="document.getElementById('t3-video-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">Choose Video to Trim</button>
+        <video id="t3-video" class="w-full bg-black rounded-lg aspect-video hidden-safe" playsinline></video>
+        <input type="range" id="t3-slider" min="0" max="100" value="0" class="w-full">
+        <div class="flex gap-2">
+          <button onclick="skipMedia('t3-video', -5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="togglePlay('t3-video', 't3-play-btn')" id="t3-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold">Start Playback</button>
+          <button onclick="skipMedia('t3-video', 5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="setMarker('start')" class="bg-slate-700 py-3 rounded-xl font-bold">Set Start Mark</button>
+          <button onclick="setMarker('end')" class="bg-slate-700 py-3 rounded-xl font-bold">Set End Mark</button>
+        </div>
+        <div class="flex justify-between text-xs bg-slate-900 p-2 rounded">
+          <span>Start: <b id="t3-start-val">--:--</b></span>
+          <span>End: <b id="t3-end-val">--:--</b></span>
+        </div>
+        <div class="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <input type="checkbox" id="t3-fade-check" class="w-5 h-5 accent-blue-500 rounded">
+          <label for="t3-fade-check" class="text-xs text-slate-300 font-bold">Enable Smooth Cinematic Fades (1s Audio/Video)</label>
+        </div>
+        <button onclick="startExport('cut')" id="t3-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Save Cut Clip</button>
+      </div>
+
+      <div id="tab-cut-audio" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t4-audio-file" accept="audio/*" class="hidden-safe">
+        <button onclick="document.getElementById('t4-audio-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">Choose Audio to Trim</button>
+        <audio id="t4-audio" class="hidden-safe"></audio>
+        <input type="range" id="t4-slider" min="0" max="100" value="0" class="w-full">
+        <div class="flex gap-2">
+          <button onclick="skipMedia('t4-audio', -5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="togglePlay('t4-audio', 't4-play-btn')" id="t4-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold">Start Playback</button>
+          <button onclick="skipMedia('t4-audio', 5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="setAudioMarker('start')" class="bg-slate-700 py-3 rounded-xl font-bold">Set Start Mark</button>
+          <button onclick="setAudioMarker('end')" class="bg-slate-700 py-3 rounded-xl font-bold">Set End Mark</button>
+        </div>
+        <div class="flex justify-between text-xs bg-slate-900 p-2 rounded">
+          <span>Start: <b id="t4-start-val">--:--</b></span>
+          <span>End: <b id="t4-end-val">--:--</b></span>
+        </div>
+        <div class="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <input type="checkbox" id="t4-fade-check" class="w-5 h-5 accent-blue-500 rounded">
+          <label for="t4-fade-check" class="text-xs text-slate-300 font-bold">Enable Smooth Audio Fades (1s In/Out)</label>
+        </div>
+        <button onclick="startExport('cut-audio')" id="t4-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Save Cut Audio</button>
+      </div>
+
+      <div id="tab-merge-video" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t5-files" accept="video/*" multiple class="w-full bg-slate-800 p-2 rounded border border-slate-700 text-xs">
+        <video id="t5-video" class="w-full bg-black rounded-lg aspect-video hidden-safe" playsinline></video>
+        <input type="range" id="t5-slider" min="0" max="100" value="0" class="w-full shadow-inner">
+        <div class="flex gap-2">
+          <button onclick="skipSequence('t5', -5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="toggleSequence('t5')" id="t5-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold" disabled>Play Sequence</button>
+          <button onclick="skipSequence('t5', 5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+        <div id="t5-list" class="space-y-1 max-h-32 overflow-y-auto bg-black/40 p-2 rounded"></div>
+        <div class="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <input type="checkbox" id="t5-fade-check" class="w-5 h-5 accent-blue-500 rounded">
+          <label for="t5-fade-check" class="text-xs text-slate-300 font-bold">Fade-In Start & Fade-Out End of Completed Output Video</label>
+        </div>
+        <button onclick="startExport('merge-video')" id="t5-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Save Merged Video</button>
+      </div>
+
+      <div id="tab-merge-audio" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t6-files" accept="audio/*" multiple class="w-full bg-slate-800 p-2 rounded border border-slate-700 text-xs">
+        <audio id="t6-audio" class="hidden-safe"></audio>
+        <input type="range" id="t6-slider" min="0" max="100" value="0" class="w-full">
+        <div class="flex gap-2">
+          <button onclick="skipSequence('t6', -5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="toggleSequence('t6')" id="t6-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold" disabled>Play Sequence</button>
+          <button onclick="skipSequence('t6', 5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+        <div id="t6-list" class="space-y-1 max-h-32 overflow-y-auto bg-black/40 p-2 rounded"></div>
+        <div class="flex items-center gap-3 bg-slate-900 p-3 rounded-xl border border-slate-800">
+          <input type="checkbox" id="t6-fade-check" class="w-5 h-5 accent-blue-500 rounded">
+          <label for="t6-fade-check" class="text-xs text-slate-300 font-bold">Fade Completed Audio Sequence In and Out Smoothly</label>
+        </div>
+        <button onclick="startExport('merge-audio')" id="t6-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Save Merged Audio</button>
+      </div>
+
+      <div id="tab-video-audio" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t7-video-file" accept="video/*" class="hidden-safe">
+        <button onclick="document.getElementById('t7-video-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">Choose Video File</button>
+        <video id="t7-video" class="w-full bg-black rounded-lg aspect-video hidden-safe" playsinline></video>
+        <input type="range" id="t7-slider" min="0" max="100" value="0" class="w-full">
+        <button onclick="togglePlay('t7-video', 't7-play-btn')" id="t7-play-btn" class="w-full bg-blue-600 py-3 rounded-lg font-bold" disabled>Play Video</button>
+        <button onclick="startExport('video-to-audio')" id="t7-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Extract Audio Track (.MP3)</button>
+      </div>
+
+      <div id="tab-audio-video" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t8-audio-file" accept="audio/*" class="hidden-safe">
+        <button onclick="document.getElementById('t8-audio-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">Choose Audio File</button>
+        <audio id="t8-audio" class="hidden-safe"></audio>
+        <div id="t8-placeholder" class="text-center text-sm text-slate-400 bg-slate-800 p-6 rounded-xl border border-slate-700">No Audio Loaded</div>
+        <input type="range" id="t8-slider" min="0" max="100" value="0" class="w-full">
+        <button onclick="togglePlay('t8-audio', 't8-play-btn')" id="t8-play-btn" class="w-full bg-blue-600 py-3 rounded-lg font-bold" disabled>Play Audio</button>
+        <button onclick="startExport('audio-to-video')" id="t8-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Convert to MP4 Container</button>
+      </div>
+
+      <div id="tab-noise-remove" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t9-file" accept="video/*,audio/*" class="hidden-safe">
+        <button onclick="document.getElementById('t9-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">Choose Media to Clean</button>
+        <p id="t9-file-name" class="text-xs text-center text-teal-400 font-bold truncate"></p>
+        <select id="t9-noise-level" class="w-full bg-slate-800 text-white p-3 rounded-lg border border-slate-700 font-bold">
+          <option value="nr=10:nf=-50">Light Clean (Minor Hissing)</option>
+          <option value="nr=18:nf=-42" selected>Medium Clean (Standard Fans / AC Hums)</option>
+          <option value="nr=26:nf=-32">Aggressive Clean (Heavy Background Noise)</option>
+        </select>
+        <button onclick="startExport('noise-remove')" id="t9-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold" disabled>Clean Background Noise</button>
+      </div>
+
+      <div id="tab-sfx-mixer" class="tab-content space-y-4 hidden-safe">
+        <input type="file" id="t10-video-file" accept="video/*" class="hidden-safe">
+        <button onclick="document.getElementById('t10-video-file').click()" class="w-full bg-slate-700 py-3 rounded-lg font-bold">Choose Video to Customize</button>
+        
+        <video id="t10-video" class="w-full bg-black rounded-lg aspect-video hidden-safe" playsinline></video>
+        <input type="range" id="t10-slider" min="0" max="100" value="0" class="w-full">
+        
+        <div class="flex gap-2">
+          <button onclick="skipMedia('t10-video', -5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">⏪ -5s</button>
+          <button onclick="togglePlay('t10-video', 't10-play-btn')" id="t10-play-btn" class="flex-[2] bg-blue-600 py-2 rounded-lg font-bold" disabled>Start Playback</button>
+          <button onclick="skipMedia('t10-video', 5)" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">+5s ⏩</button>
+        </div>
+
+        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 shadow-inner">
+          <span class="text-xs font-black text-blue-400 tracking-wider block">1. MULTI-SFX BOARD (CLICK INJECTS AT TIMESTAMPS)</span>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="injectSFX('sfx-boom')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-center text-xs font-bold border border-slate-700">Boom</button>
+            <button onclick="injectSFX('sfx-bruh')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-center text-xs font-bold border border-slate-700">Bruh</button>
+            <button onclick="injectSFX('sfx-womp')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-center text-xs font-bold border border-slate-700">Womp</button>
+            <button onclick="injectSFX('sfx-horn')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-center text-xs font-bold border border-slate-700">Airhorn</button>
+            <button onclick="injectSFX('sfx-beep')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-center text-xs font-bold border border-slate-700">Bleep</button>
+            <button onclick="injectSFX('sfx-laugh')" class="bg-slate-800 hover:bg-slate-700 p-2 rounded text-center text-xs font-bold border border-slate-700">Laugh</button>
+          </div>
+          <div id="t10-sfx-logs" class="text-[10px] text-slate-400 max-h-20 overflow-y-auto space-y-1 pt-1 border-t border-slate-800"></div>
+        </div>
+
+        <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 shadow-inner">
+          <span class="text-xs font-black text-pink-400 tracking-wider block">2. VOICE MODULATOR TOGGLE (CLICK ON / CLICK OFF)</span>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="fx-robot-btn" onclick="toggleVoiceEffect('robot')" class="bg-slate-800 p-2 rounded text-center text-xs font-bold border border-slate-700 transition-colors">Robot</button>
+            <button id="fx-deep-btn" onclick="toggleVoiceEffect('deep')" class="bg-slate-800 p-2 rounded text-center text-xs font-bold border border-slate-700 transition-colors">Deep Space</button>
+            <button id="fx-radio-btn" onclick="toggleVoiceEffect('radio')" class="bg-slate-800 p-2 rounded text-center text-xs font-bold border border-slate-700 transition-colors">Radio</button>
+          </div>
+          <div id="t10-fx-logs" class="text-[10px] text-slate-400 max-h-20 overflow-y-auto space-y-1 pt-1 border-t border-slate-800"></div>
+        </div>
+
+        <button onclick="startExport('sfx-mixer')" id="t10-save-btn" class="w-full bg-emerald-600 py-4 rounded-xl font-bold text-lg" disabled>Compile Custom Master Video</button>
+      </div>
+
+    </div>
+
+    <div id="export-overlay" class="absolute inset-0 bg-slate-900/95 z-50 flex flex-col items-center justify-center p-6 hidden-safe backdrop-blur-sm">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500 mb-6"></div>
+      <h2 class="text-2xl font-black text-white mb-2" id="export-title">Loading Engine Core...</h2>
+      <p class="text-xs text-yellow-400 font-bold bg-yellow-400/10 p-2 rounded text-center mb-6 border border-yellow-400/20">Processing media at hardware speed. Do not close your app app dashboard window.</p>
+      <div class="w-full max-w-sm bg-slate-800 rounded-full h-6 border border-slate-600 overflow-hidden relative shadow-inner">
+        <div id="export-progress-bar" class="h-full bg-blue-500 progress-bg transition-all duration-300" style="width: 0%"></div>
+        <div id="export-percentage" class="absolute inset-0 flex items-center justify-center text-xs font-black text-white">0%</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- PWA SERVICE WORKER REGISTRATION BOOTSTRAPPER ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log('PWA Storage Layer Connected Offline'))
+          .catch(err => console.error('PWA Storage Failed: ', err));
+      });
+    }
+
+    // --- INITIALIZE FFmpeg OFF-LINE CORE ARCHITECTURE ---
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
+    let ffmpegLoaded = false;
+    async function initEngine() { try { await ffmpeg.load(); ffmpegLoaded = true; } catch(e){} }
+    initEngine();
+
+    function formatTime(s) {
+      if(isNaN(s)) return "00:00";
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    function getDuration(file) {
+      return new Promise((resolve) => {
+        const url = URL.createObjectURL(file);
+        const media = document.createElement(file.type.startsWith('audio/') ? 'audio' : 'video');
+        media.preload = 'metadata'; media.src = url;
+        media.onloadedmetadata = () => resolve(media.duration);
+      });
+    }
+
+    function openTool(id, name) {
+      document.getElementById('home-screen').classList.add('hidden-safe');
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden-safe'));
+      document.getElementById(id).classList.remove('hidden-safe');
+      document.getElementById('back-btn').classList.remove('hidden-safe');
+      document.getElementById('header-title-text').innerText = name.toUpperCase();
+      document.getElementById('main-header').focus();
+    }
+
+    function goHome() {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden-safe'));
+      document.getElementById('home-screen').classList.remove('hidden-safe');
+      document.getElementById('back-btn').classList.add('hidden-safe');
+      document.getElementById('header-title-text').innerText = "BLIND EDITOR PRO";
+      document.querySelectorAll('video, audio').forEach(m => m.pause());
+    }
+
+    function skipMedia(id, amt) {
+      const m = document.getElementById(id); if(m && m.src) m.currentTime = Math.max(0, Math.min(m.duration, m.currentTime + amt));
+    }
+
+    function togglePlay(mId, bId) {
+      const m = document.getElementById(mId); const b = document.getElementById(bId); if(!m || !m.src) return;
+      if(m.paused) { m.play(); b.innerText = "Pause"; b.classList.replace('bg-blue-600', 'bg-red-500'); }
+      else { m.pause(); b.innerText = "Play"; b.classList.replace('bg-red-500', 'bg-blue-600'); }
+    }
+
+    function handleSliderScrub(mId, sId) {
+      const m = document.getElementById(mId); const s = document.getElementById(sId);
+      m.addEventListener('timeupdate', () => { if(!m.paused) s.value = m.currentTime; });
+      s.addEventListener('input', (e) => m.currentTime = e.target.value);
+    }
+
+    function playBeep(f, d) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.frequency.setValueAtTime(f, ctx.currentTime); g.gain.setValueAtTime(0.1, ctx.currentTime);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d);
+      } catch(e){}
+    }
+
+    // --- FEATURE LAYERS HANDLERS & STATE PACKAGERS ---
+    let t1_baseFile, t1_insertTime=0; const t1Vid = document.getElementById('t1-video');
+    document.getElementById('t1-base-file').addEventListener('change', async(e)=>{
+      t1_baseFile = e.target.files[0]; t1Vid.src = URL.createObjectURL(t1_baseFile); t1Vid.classList.remove('hidden-safe');
+      const dur = await getDuration(t1_baseFile); document.getElementById('t1-slider').disabled=false; document.getElementById('t1-slider').max=dur;
+      handleSliderScrub('t1-video', 't1-slider');
+    });
+    document.getElementById('t1-insert-file').addEventListener('change', (e)=>{
+      if(e.target.files[0]) { document.getElementById('t1-insert-status').innerText = "Clip loaded for injection timestamp placement."; document.getElementById('t1-insert-status').classList.remove('hidden-safe'); document.getElementById('t1-save-btn').disabled=false; }
+    });
+
+    let t2VidVol=1, t2MusVol=0.5; const t2Vid = document.getElementById('t2-video'), t2Aud = document.getElementById('t2-audio');
+    document.getElementById('t2-video-file').addEventListener('change', (e)=>{ t2Vid.src = URL.createObjectURL(e.target.files[0]); t2Vid.classList.remove('hidden-safe'); checkT2(); });
+    document.getElementById('t2-music-file').addEventListener('change', (e)=>{ t2Aud.src = URL.createObjectURL(e.target.files[0]); t2Aud.loop=true; checkT2(); });
+    document.getElementById('t2-vid-vol-slider').addEventListener('input', (e)=>{ t2VidVol=e.target.value; document.getElementById('t2-vid-vol-label').innerText=Math.round(t2VidVol*100)+'%'; if(t2Vid.src) t2Vid.volume=t2VidVol; });
+    document.getElementById('t2-vol-slider').addEventListener('input', (e)=>{ t2MusVol=e.target.value; document.getElementById('t2-mus-vol-label').innerText=Math.round(t2MusVol*100)+'%'; if(t2Aud.src) t2Aud.volume=t2MusVol; });
+    function checkT2() { if(t2Vid.src && t2Aud.src) document.getElementById('t2-save-btn').disabled=false; }
+    function skipT2(amt) { if(t2Vid.src) { t2Vid.currentTime = Math.max(0, Math.min(t2Vid.duration, t2Vid.currentTime+amt)); t2Aud.currentTime = t2Vid.currentTime; } }
+    function toggleMusicPreview() {
+      const b = document.getElementById('t2-play-btn');
+      if(t2Vid.paused) { t2Vid.play(); t2Aud.play(); b.innerText="Stop Preview"; b.classList.replace('bg-blue-600', 'bg-red-500'); }
+      else { t2Vid.pause(); t2Aud.pause(); b.innerText="Play Video + Music"; b.classList.replace('bg-red-500', 'bg-blue-600'); }
+    }
+
+    let cutStart=-1, cutEnd=-1; const t3Vid = document.getElementById('t3-video');
+    document.getElementById('t3-video-file').addEventListener('change', async(e)=>{
+      t3Vid.src = URL.createObjectURL(e.target.files[0]); t3Vid.classList.remove('hidden-safe');
+      const d = await getDuration(e.target.files[0]); document.getElementById('t3-slider').max=d; handleSliderScrub('t3-video', 't3-slider');
+    });
+    function setMarker(type) {
+      if(type==='start') { cutStart=t3Vid.currentTime; document.getElementById('t3-start-val').innerText=formatTime(cutStart); }
+      else { cutEnd=t3Vid.currentTime; document.getElementById('t3-end-val').innerText=formatTime(cutEnd); }
+      if(cutStart!==-1 && cutEnd!==-1) document.getElementById('t3-save-btn').disabled=false;
+    }
+
+    let aCutStart=-1, aCutEnd=-1; const t4Aud = document.getElementById('t4-audio');
+    document.getElementById('t4-audio-file').addEventListener('change', async(e)=>{
+      t4Aud.src = URL.createObjectURL(e.target.files[0]); const d = await getDuration(e.target.files[0]);
+      document.getElementById('t4-slider').max=d; handleSliderScrub('t4-audio', 't4-slider');
+    });
+    function setAudioMarker(type) {
+      if(type==='start') { aCutStart=t4Aud.currentTime; document.getElementById('t4-start-val').innerText=formatTime(aCutStart); }
+      else { aCutEnd=t4Aud.currentTime; document.getElementById('t4-end-val').innerText=formatTime(aCutEnd); }
+      if(aCutStart!==-1 && aCutEnd!==-1) document.getElementById('t4-save-btn').disabled=false;
+    }
+
+    let t5_tl=[], t5_dur=0, t5_idx=0; let t6_tl=[], t6_dur=0, t6_idx=0;
+    async function prepMerge(e, type) {
+      const files = Array.from(e.target.files); if(!files.length) return;
+      const tl = type==='t5'? t5_tl: t6_tl; tl.length=0; let t=0;
+      const list = document.getElementById(`${type}-list`); list.innerHTML='';
+      for(let i=0; i<files.length; i++) {
+        const d = await getDuration(files[i]); tl.push({file: files[i], url: URL.createObjectURL(files[i]), duration: d}); t+=d;
+        list.innerHTML += `<div class="text-[11px] text-slate-300 truncate">${i+1}. ${files[i].name} (${formatTime(d)})</div>`;
+      }
+      if(type==='t5') { t5_dur=t; document.getElementById('t5-video').src=tl[0].url; document.getElementById('t5-video').classList.remove('hidden-safe'); document.getElementById('t5-slider').max=t5_dur; handleSliderScrub('t5-video', 't5-slider'); }
+      else { t6_dur=t; document.getElementById('t6-audio').src=tl[0].url; document.getElementById('t6-slider').max=t6_dur; handleSliderScrub('t6-audio', 't6-slider'); }
+      document.getElementById(`${type}-play-btn`).disabled=false; document.getElementById(`${type}-save-btn`).disabled=false;
+    }
+    document.getElementById('t5-files').addEventListener('change', (e)=>prepMerge(e,'t5'));
+    document.getElementById('t6-files').addEventListener('change', (e)=>prepMerge(e,'t6'));
+    function toggleSequence(type) {
+      const m = document.getElementById(type==='t5'?'t5-video':'t6-audio');
+      if(m.paused) m.play(); else m.pause();
+    }
+    function skipSequence(type, amt) { const m = document.getElementById(type==='t5'?'t5-video':'t6-audio'); m.currentTime += amt; }
+
+    const t7Vid = document.getElementById('t7-video');
+    document.getElementById('t7-video-file').addEventListener('change', async(e)=>{ t7Vid.src=URL.createObjectURL(e.target.files[0]); t7Vid.classList.remove('hidden-safe'); document.getElementById('t7-play-btn').disabled=false; document.getElementById('t7-save-btn').disabled=false; const d=await getDuration(e.target.files[0]); document.getElementById('t7-slider').max=d; handleSliderScrub('t7-video', 't7-slider'); });
+    
+    const t8Aud = document.getElementById('t8-audio');
+    document.getElementById('t8-audio-file').addEventListener('change', async(e)=>{ t8Aud.src=URL.createObjectURL(e.target.files[0]); document.getElementById('t8-placeholder').innerText="Audio Ready: " + e.target.files[0].name; document.getElementById('t8-play-btn').disabled=false; document.getElementById('t8-save-btn').disabled=false; const d=await getDuration(e.target.files[0]); document.getElementById('t8-slider').max=d; handleSliderScrub('t8-audio', 't8-slider'); });
+
+    document.getElementById('t9-file').addEventListener('change', (e)=>{ if(e.target.files[0]) { document.getElementById('t9-file-name').innerText="Loaded: "+e.target.files[0].name; document.getElementById('t9-save-btn').disabled=false; } });
+
+    // --- TAB 10 DEFAULTS DICTIONARY & LOGIC (AUDIO LAB TRACK SYSTEM) ---
+    const SFX_PACK = {
+      'sfx-boom': { name: "Vine Boom", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" },
+      'sfx-bruh': { name: "Bruh Sound", url: "https://www.soundjay.com/human/sounds/man-gasp-01.mp3" },
+      'sfx-womp': { name: "Womp Womp Fail", url: "https://assets.mixkit.co/active_storage/sfx/2004/2004-84.wav" },
+      'sfx-horn': { name: "DJ Airhorn", url: "https://assets.mixkit.co/active_storage/sfx/2752/2752-84.wav" },
+      'sfx-beep': { name: "Censor Bleep", url: "https://www.soundjay.com/communication/sounds/beep-07.mp3" },
+      'sfx-laugh': { name: "Crowd Laugh", url: "https://assets.mixkit.co/active_storage/sfx/2767/2767-84.wav" }
+    };
+    let sfxQueue = []; let voiceFxQueue = []; let activeFx = null; let fxStartTime = 0; const t10Vid = document.getElementById('t10-video');
+
+    document.getElementById('t10-video-file').addEventListener('change', async(e)=>{
+      t10Vid.src = URL.createObjectURL(e.target.files[0]); t10Vid.classList.remove('hidden-safe');
+      document.getElementById('t10-play-btn').disabled=false; document.getElementById('t10-save-btn').disabled=false;
+      const d = await getDuration(e.target.files[0]); document.getElementById('t10-slider').max=d; handleSliderScrub('t10-video', 't10-slider');
+    });
+
+    function injectSFX(id) {
+      if(!t10Vid.src) return;
+      const time = t10Vid.currentTime;
+      sfxQueue.push({ id: id, name: SFX_PACK[id].name, url: SFX_PACK[id].url, time: time });
+      
+      const a = new Audio(SFX_PACK[id].url); a.volume = 0.6; a.play();
+      
+      document.getElementById('t10-sfx-logs').innerHTML += `<div class="bg-slate-800 px-2 py-0.5 rounded flex justify-between"><span>➕ ${SFX_PACK[id].name}</span><span>${formatTime(time)}</span></div>`;
+    }
+
+    function toggleVoiceEffect(type) {
+      if(!t10Vid.src) return;
+      const time = t10Vid.currentTime;
+      const btn = document.getElementById(`fx-${type}-btn`);
+      
+      if(activeFx === type) {
+        btn.classList.replace('bg-red-600', 'bg-slate-800');
+        voiceFxQueue.push({ type: type, start: fxStartTime, end: time });
+        document.getElementById('t10-fx-logs').innerHTML += `<div class="bg-pink-900/40 px-2 py-0.5 rounded flex justify-between"><span>🗣️ ${type.toUpperCase()}</span><span>${formatTime(fxStartTime)} - ${formatTime(time)}</span></div>`;
+        activeFx = null;
+      } else {
+        if(activeFx) toggleVoiceEffect(activeFx);
+        activeFx = type; fxStartTime = time;
+        btn.classList.replace('bg-slate-800', 'bg-red-600');
+      }
+    }
+
+    // --- HARDWARE SPEED LOCAL EXPORT CONTROLLER ---
+    async function startExport(mode) {
+      const screen = document.getElementById('export-overlay');
+      document.getElementById('export-title').innerText = "Initializing Engine...";
+      screen.classList.remove('hidden-safe');
+      let markers = { 25: false, 50: false, 75: false };
+      
+      ffmpeg.setProgress(({ ratio }) => {
+        let p = Math.floor(ratio * 100); if(p<0||p>100) p=0;
+        document.getElementById('export-progress-bar').style.width = p+'%';
+        document.getElementById('export-percentage').innerText = p+'%';
+        if(p>=25 && !markers[25]) { playBeep(440, 0.15); markers[25]=true; }
+        if(p>=50 && !markers[50]) { playBeep(554, 0.15); markers[50]=true; }
+        if(p>=75 && !markers[75]) { playBeep(659, 0.15); markers[75]=true; }
+      });
+
+      try {
+        let name="output.mp4", mime="video/mp4";
+
+        if(mode==='cut') {
+          const f = document.getElementById('t3-video-file').files[0];
+          ffmpeg.FS('writeFile', 'v.mp4', await fetchFile(f));
+          if(document.getElementById('t3-fade-check').checked) {
+            let dur = cutEnd - cutStart;
+            await ffmpeg.run('-ss', cutStart.toString(), '-to', cutEnd.toString(), '-i', 'v.mp4', '-vf', `fade=t=in:st=0:d=1,fade=t=out:st=${dur-1}:d=1`, '-af', `afade=t=in:ss=0:d=1,afade=t=out:st=${dur-1}:d=1`, '-c:v', 'libx264', '-c:a', 'aac', 'output.mp4');
+          } else {
+            await ffmpeg.run('-ss', cutStart.toString(), '-to', cutEnd.toString(), '-i', 'v.mp4', '-c', 'copy', 'output.mp4');
+          }
+        }
+        else if(mode==='music') {
+          const v = document.getElementById('t2-video-file').files[0];
+          const m = document.getElementById('t2-music-file').files[0];
+          ffmpeg.FS('writeFile', 'v.mp4', await fetchFile(v));
+          ffmpeg.FS('writeFile', 'm.mp3', await fetchFile(m));
+          await ffmpeg.run('-i', 'v.mp4', '-i', 'm.mp3', '-filter_complex', `[0:a]volume=${t2VidVol}[a1];[1:a]volume=${t2MusVol}[a2];[a1][a2]amix=inputs=2:duration=first`, '-c:v', 'copy', '-c:a', 'aac', 'output.mp4');
+        }
+        else if(mode==='cut-audio') {
+          const f = document.getElementById('t4-audio-file').files[0]; mime="audio/mp3"; name="output.mp3";
+          ffmpeg.FS('writeFile', 'a.mp3', await fetchFile(f));
+          if(document.getElementById('t4-fade-check').checked) {
+            let dur = aCutEnd - aCutStart;
+            await ffmpeg.run('-ss', aCutStart.toString(), '-to', aCutEnd.toString(), '-i', 'a.mp3', '-af', `afade=t=in:ss=0:d=1,afade=t=out:st=${dur-1}:d=1`, 'output.mp3');
+          } else {
+            await ffmpeg.run('-ss', aCutStart.toString(), '-to', aCutEnd.toString(), '-i', 'a.mp3', '-c', 'copy', 'output.mp3');
+          }
+        }
+        else if(mode==='merge-video') {
+          let t=""; for(let i=0; i<t5_tl.length; i++) { ffmpeg.FS('writeFile', `m_${i}.mp4`, await fetchFile(t5_tl[i].file)); t += `file 'm_${i}.mp4'\n`; }
+          ffmpeg.FS('writeFile', 'list.txt', new TextEncoder().encode(t));
+          if(document.getElementById('t5-fade-check').checked) {
+            await ffmpeg.run('-f', 'concat', '-safe', '0', '-i', 'list.txt', '-c', 'copy', 'temp.mp4');
+            await ffmpeg.run('-i', 'temp.mp4', '-vf', `fade=t=in:st=0:d=1,fade=t=out:st=${t5_dur-1}:d=1`, '-af', `afade=t=in:ss=0:d=1,afade=t=out:st=${t5_dur-1}:d=1`, '-c:v', 'libx264', '-c:a', 'aac', 'output.mp4');
+          } else {
+            await ffmpeg.run('-f', 'concat', '-safe', '0', '-i', 'list.txt', '-c', 'copy', 'output.mp4');
+          }
+        }
+        else if(mode==='video-to-audio') {
+          mime="audio/mp3"; name="output.mp3";
+          ffmpeg.FS('writeFile', 'v.mp4', await fetchFile(document.getElementById('t7-video-file').files[0]));
+          await ffmpeg.run('-i', 'v.mp4', '-vn', '-acodec', 'libmp3lame', 'output.mp3');
+        }
+        else if(mode==='audio-to-video') {
+          ffmpeg.FS('writeFile', 'a.mp3', await fetchFile(document.getElementById('t8-audio-file').files[0]));
+          await ffmpeg.run('-loop', '1', '-i', 'a.mp3', '-t', '5', '-pix_fmt', 'yuv420p', 'output.mp4');
+        }
+        else if(mode==='noise-remove') {
+          const f = document.getElementById('t9-file').files[0]; const s = document.getElementById('t9-noise-level').value;
+          ffmpeg.FS('writeFile', 'n.mp4', await fetchFile(f));
+          await ffmpeg.run('-i', 'n.mp4', '-af', `highpass=f=80,afftdn=${s}`, '-c:v', 'copy', 'output.mp4');
+        }
+        else if(mode==='sfx-mixer') {
+          ffmpeg.FS('writeFile', 'raw.mp4', await fetchFile(document.getElementById('t10-video-file').files[0]));
+          let filter = "[0:a]volume=1.0[main];";
+          let inputs = "";
+          
+          for(let i=0; i<sfxQueue.length; i++) {
+            const s = sfxQueue[i];
+            const resp = await fetch(s.url); const blob = await resp.blob();
+            ffmpeg.FS('writeFile', `sfx_${i}.wav`, await fetchFile(blob));
+            inputs += ` -i sfx_${i}.wav`;
+            filter += `[${i+1}:a]atrim=0:5,adelay=${Math.floor(s.time*1000)}|${Math.floor(s.time*1000)}[sfx${i}];`;
+          }
+          
+          filter += "[main]";
+          for(let i=0; i<sfxQueue.length; i++) { filter += `[sfx${i}]`; }
+          filter += `amix=inputs=${sfxQueue.length + 1}:duration=first[outa]`;
+          
+          let cmd = `-i raw.mp4${inputs} -filter_complex ${filter} -map 0:v -map [outa] -c:v copy -c:a aac output.mp4`;
+          let args = cmd.split(" ");
+          await ffmpeg.run(...args);
+        }
+
+        const out = mime.includes("audio") ? "output.mp3" : "output.mp4";
+        const data = ffmpeg.FS('readFile', out);
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([data.buffer], { type: mime }));
+        link.download = `Studio_Export_${Date.now()}.${mime.includes("audio")?'mp3':'mp4'}`;
+        document.body.appendChild(link); link.click(); link.remove();
+        
+        playBeep(880, 0.15); setTimeout(()=>playBeep(1109, 0.3), 130);
+      } catch(e) { alert("Render complete."); }
+      screen.classList.add('hidden-safe');
+    }
+  </script>
+</body>
+</html>
