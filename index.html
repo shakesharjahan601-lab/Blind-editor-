@@ -3,304 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Blind Editor Pro</title>
+  <title>Editor Pro</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
-
   <style>
-    body { background-color: #0f172a; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -5px; }
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: #334155; border-radius: 3px; }
-    .hidden-safe { display: none !important; }
+    body { background-color: #0f172a; color: #f8fafc; }
   </style>
 </head>
-<body class="h-screen overflow-hidden flex flex-col items-center">
+<body class="h-screen flex flex-col items-center justify-center p-6">
 
-  <div id="login-screen" class="w-full max-w-md h-full flex flex-col justify-center items-center p-6 bg-slate-900 z-50">
-    <h1 class="text-3xl font-black text-white mb-2">Editor Pro</h1>
-    <p class="text-slate-400 mb-8 text-sm">Offline Secure Access</p>
-    <div id="login-error" class="text-red-400 text-xs font-bold mb-3 hidden-safe">Incorrect password. Try again.</div>
-    <input type="password" id="password" aria-label="Enter Password" placeholder="Enter Password (editor123)" class="w-full p-3 mb-6 bg-slate-800 rounded text-white outline-none focus:ring-2 focus:ring-blue-500 text-center">
-    <button onclick="loginUser()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg">Unlock Studio</button>
-  </div>
-
-  <div id="main-studio" class="w-full max-w-md h-full flex flex-col bg-slate-900 relative hidden-safe">
+  <div class="w-full max-w-md bg-slate-900 rounded-2xl p-6 text-center border border-slate-800 shadow-xl">
+    <h1 class="text-3xl font-black text-blue-500 mb-2">Editor Pro</h1>
+    <p class="text-slate-400 mb-6 text-sm">Installation & Testing Base</p>
     
-    <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700 shrink-0">
-      <h1 class="text-lg font-black tracking-wider">BLIND EDITOR PRO</h1>
-      <div class="flex gap-3">
-        <button onclick="openModal('help-modal')" aria-label="Help Center" class="text-slate-300 text-xl font-bold">❔</button>
-        <button onclick="openModal('settings-modal')" aria-label="Settings" class="text-slate-300 text-xl">⚙️</button>
-      </div>
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6">
+      <p class="text-sm text-emerald-400 font-bold">✓ Ready for Installation</p>
+      <p class="text-xs text-slate-400 mt-1">Open this page on your mobile phone browser to install it onto your home screen.</p>
     </div>
 
-    <input type="file" id="media-upload" class="hidden-safe" aria-hidden="true">
-
-    <div id="dashboard" class="flex-1 overflow-y-auto p-4">
-      <div class="flex gap-2 mb-4 bg-slate-800 p-1 rounded-xl" role="tablist">
-        <button onclick="switchTab('video-tools')" id="tab-btn-video" role="tab" class="flex-1 py-2 font-bold text-sm rounded-lg bg-blue-600 text-white transition">Video Tools</button>
-        <button onclick="switchTab('audio-tools')" id="tab-btn-audio" role="tab" class="flex-1 py-2 font-bold text-sm rounded-lg text-slate-400 transition">Audio Tools</button>
-      </div>
-
-      <div id="video-tools" class="grid grid-cols-2 gap-3" role="tabpanel">
-        <button onclick="triggerUpload('trim-video')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Trim Video</button>
-        <button onclick="triggerUpload('compress-video')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Compress Video</button>
-        <button onclick="triggerUpload('remove-noise-video')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Remove Noise</button>
-        <button onclick="triggerUpload('video-to-audio')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Video to Audio</button>
-        <button onclick="triggerUpload('merge-video', true)" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Merge Videos</button>
-        <button onclick="triggerUpload('merge-video', true)" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Insert Clip</button>
-      </div>
-
-      <div id="audio-tools" class="grid grid-cols-2 gap-3 hidden-safe" role="tabpanel">
-        <button onclick="triggerUpload('trim-audio')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Trim Audio</button>
-        <button onclick="triggerUpload('compress-audio')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Compress Audio</button>
-        <button onclick="triggerUpload('remove-noise-audio')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Remove Noise</button>
-        <button onclick="triggerUpload('audio-to-video')" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Audio to Video</button>
-        <button onclick="triggerUpload('merge-audio', true)" class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700 font-bold text-xs hover:bg-slate-700">Merge Audios</button>
-        <button onclick="triggerUpload('add-music', true)" class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-xl shadow font-bold text-xs col-span-2">Add Music (Advanced)</button>
-      </div>
-    </div>
-
-    <div id="universal-player" class="bg-slate-950 p-4 border-t border-slate-800">
-      <video id="main-preview" class="w-full bg-black rounded-lg aspect-video mb-3" playsinline aria-label="Media Preview Player"></video>
-      <input type="range" id="seek-slider" min="0" max="100" value="0" class="w-full mb-3" aria-label="Timeline seek slider">
-      <div class="flex justify-center items-center gap-6">
-        <button onclick="skipMedia(-10)" class="text-slate-300 font-bold text-sm" aria-label="Rewind 10 seconds">⏪ 10s</button>
-        <button onclick="togglePlay()" id="play-btn" class="bg-blue-600 text-white w-12 h-12 rounded-full font-black text-xl flex items-center justify-center shadow-lg" aria-label="Play or Pause">▶</button>
-        <button onclick="skipMedia(10)" class="text-slate-300 font-bold text-sm" aria-label="Fast forward 10 seconds">10s ⏩</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="settings-modal" class="absolute inset-0 bg-slate-900/95 z-50 p-6 hidden-safe flex flex-col backdrop-blur-md" role="dialog" aria-modal="true">
-    <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-2">
-      <h2 class="text-xl font-black text-white">Settings</h2>
-      <button onclick="closeModal('settings-modal')" class="text-red-400 font-bold text-xl" aria-label="Close Settings">✕</button>
-    </div>
-    <div class="space-y-4">
-      <div class="bg-slate-800 p-3 rounded-lg">
-        <label for="set-vid" class="text-xs text-blue-400 font-bold block mb-1">Default Video Export</label>
-        <select id="set-vid" class="w-full bg-slate-900 text-white p-2 rounded outline-none text-sm">
-          <option value="mp4">MP4 (Recommended)</option>
-        </select>
-      </div>
-      <button onclick="logoutUser()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mt-4">Log Out (Lock App)</button>
-    </div>
-  </div>
-
-  <div id="help-modal" class="absolute inset-0 bg-slate-900 z-50 hidden-safe flex flex-col" role="dialog" aria-modal="true">
-    <div class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
-      <h2 class="text-lg font-black text-white">Help Center</h2>
-      <button onclick="closeModal('help-modal')" class="text-red-400 font-bold text-xl" aria-label="Close Help">✕</button>
-    </div>
-    <div class="p-4 overflow-y-auto space-y-4 text-sm text-slate-300 h-full">
-      <div class="bg-slate-800 p-3 rounded-lg border-l-4 border-blue-500">
-        <strong class="text-white">Multi-File Tools:</strong><br>For tools like Merge or Add Music, you MUST select two files at the same time from your file picker.
-      </div>
-    </div>
-  </div>
-
-  <div id="export-overlay" class="absolute inset-0 bg-slate-900/95 z-[60] flex flex-col justify-center items-center p-6 hidden-safe backdrop-blur-sm" role="alertdialog" aria-live="assertive">
-    <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500 mb-6"></div>
-    <h2 id="loading-text" class="text-xl font-black text-white mb-2">Processing Engine...</h2>
-    <p class="text-xs text-yellow-400 text-center font-bold mb-6">Screen Wake Lock Active.<br>Do not minimize app or lock screen.</p>
+    <p class="text-xs text-slate-500">Once installed, we will update this screen with our tools step-by-step.</p>
   </div>
 
   <script>
-    const APP_PASSWORD = "editor123";
-    if(localStorage.getItem("isLoggedIn") === "true") {
-      document.getElementById('login-screen').classList.add('hidden-safe');
-      document.getElementById('main-studio').classList.remove('hidden-safe');
-    }
-    function loginUser() {
-      if(document.getElementById('password').value === APP_PASSWORD) {
-        localStorage.setItem("isLoggedIn", "true");
-        document.getElementById('login-screen').classList.add('hidden-safe');
-        document.getElementById('main-studio').classList.remove('hidden-safe');
-      } else {
-        document.getElementById('login-error').classList.remove('hidden-safe');
-      }
-    }
-    function logoutUser() {
-      localStorage.removeItem("isLoggedIn");
-      location.reload();
-    }
-
-    function switchTab(id) {
-      document.getElementById('video-tools').classList.add('hidden-safe');
-      document.getElementById('audio-tools').classList.add('hidden-safe');
-      document.getElementById(id).classList.remove('hidden-safe');
-      document.getElementById('tab-btn-video').className = "flex-1 py-2 font-bold text-sm rounded-lg transition " + (id === 'video-tools' ? "bg-blue-600 text-white" : "bg-transparent text-slate-400");
-      document.getElementById('tab-btn-audio').className = "flex-1 py-2 font-bold text-sm rounded-lg transition " + (id === 'audio-tools' ? "bg-blue-600 text-white" : "bg-transparent text-slate-400");
-    }
-    function openModal(id) { document.getElementById(id).classList.remove('hidden-safe'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden-safe'); }
-
-    const player = document.getElementById('main-preview');
-    const playBtn = document.getElementById('play-btn');
-    const seekSlider = document.getElementById('seek-slider');
-
-    function togglePlay() {
-      if(!player.src) return alert("Please load a media file first!");
-      player.paused ? player.play() : player.pause();
-    }
-    player.addEventListener('play', () => playBtn.innerText = '⏸');
-    player.addEventListener('pause', () => playBtn.innerText = '▶');
-    player.addEventListener('timeupdate', () => {
-      if(!player.paused && player.duration) {
-        seekSlider.max = player.duration;
-        seekSlider.value = player.currentTime;
-      }
-    });
-    seekSlider.addEventListener('input', (e) => { if(player.duration) player.currentTime = e.target.value; });
-    function skipMedia(sec) { if(player.duration) player.currentTime = Math.max(0, Math.min(player.duration, player.currentTime + sec)); }
-
-    let wakeLock = null;
-    async function requestWakeLock() {
-      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } 
-      catch (err) { console.error(`Wake Lock error: ${err.message}`); }
-    }
-    function releaseWakeLock() { if (wakeLock !== null) wakeLock.release().then(() => wakeLock = null); }
-
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    const ffmpeg = createFFmpeg({ log: true });
-    let currentActiveTool = "";
-    let uploadedFiles = [];
-
-    async function initEngine() {
-      if (!ffmpeg.isLoaded()) {
-        document.getElementById('loading-text').innerText = "Starting Engine...";
-        document.getElementById('export-overlay').classList.remove('hidden-safe');
-        await ffmpeg.load();
-        document.getElementById('export-overlay').classList.add('hidden-safe');
-      }
-    }
-
-    function triggerUpload(toolName, needsMultiple = false) {
-      currentActiveTool = toolName;
-      const uploader = document.getElementById('media-upload');
-      uploader.multiple = needsMultiple;
-      
-      if (toolName === 'add-music') {
-        uploader.accept = "video/*,audio/*";
-      } else if (toolName.includes('video')) {
-        uploader.accept = "video/*";
-      } else {
-        uploader.accept = "audio/*";
-      }
-      uploader.click();
-    }
-
-    document.getElementById('media-upload').addEventListener('change', async (e) => {
-      uploadedFiles = Array.from(e.target.files);
-      if(uploadedFiles.length === 0) return;
-
-      const needsMultiple = currentActiveTool.includes("merge") || currentActiveTool === "add-music";
-      if (needsMultiple && uploadedFiles.length < 2) {
-        alert("This tool requires you to select at least TWO files at the same time.");
-        document.getElementById('media-upload').value = "";
-        return;
-      }
-
-      player.src = URL.createObjectURL(uploadedFiles[0]);
-      await initEngine();
-      processMediaWithFFmpeg();
-    });
-
-    async function processMediaWithFFmpeg() {
-      let ffmpegCommand = [];
-      let outputFileName = "output.mp4";
-      let outputMimeType = "video/mp4";
-      
-      const file1 = uploadedFiles[0];
-      const inputExt1 = file1.name.split('.').pop();
-      const inputName1 = `input1.${inputExt1}`;
-
-      document.getElementById('loading-text').innerText = "Processing File...";
-      document.getElementById('export-overlay').classList.remove('hidden-safe');
-      requestWakeLock();
-
-      try {
-        ffmpeg.FS('writeFile', inputName1, await fetchFile(file1));
-
-        if (currentActiveTool === "trim-video" || currentActiveTool === "trim-audio") {
-          const start = prompt("Enter start time in seconds (e.g., 5):", "0");
-          const duration = prompt("Enter how many seconds to keep (e.g., 10):", "10");
-          if (start === null || duration === null) throw new Error("Cancelled by user");
-          
-          outputFileName = currentActiveTool.includes("video") ? "trimmed.mp4" : "trimmed.mp3";
-          outputMimeType = currentActiveTool.includes("video") ? "video/mp4" : "audio/mpeg";
-          ffmpegCommand = ['-ss', start, '-i', inputName1, '-t', duration, '-c', 'copy', outputFileName];
-        }
-        else if (currentActiveTool === "compress-video") {
-          outputFileName = "compressed.mp4";
-          outputMimeType = "video/mp4";
-          ffmpegCommand = ['-i', inputName1, '-vcodec', 'libx264', '-crf', '28', outputFileName];
-        }
-        else if (currentActiveTool === "compress-audio") {
-          outputFileName = "compressed.mp3";
-          outputMimeType = "audio/mpeg";
-          ffmpegCommand = ['-i', inputName1, '-b:a', '64k', outputFileName];
-        }
-        else if (currentActiveTool === "video-to-audio") {
-          outputFileName = "extracted.mp3";
-          outputMimeType = "audio/mpeg";
-          ffmpegCommand = ['-i', inputName1, '-q:a', '0', '-map', 'a', outputFileName];
-        }
-        else if (currentActiveTool === "audio-to-video") {
-          outputFileName = "audio_video.mp4";
-          outputMimeType = "video/mp4";
-          ffmpegCommand = ['-f', 'lavfi', '-i', 'color=c=black:s=1280x720', '-i', inputName1, '-c:v', 'libx264', '-c:a', 'aac', '-shortest', outputFileName];
-        }
-        else if (currentActiveTool.includes("remove-noise")) {
-          outputFileName = currentActiveTool.includes("video") ? "clean.mp4" : "clean.mp3";
-          outputMimeType = currentActiveTool.includes("video") ? "video/mp4" : "audio/mpeg";
-          ffmpegCommand = ['-i', inputName1, '-af', 'highpass=f=200,lowpass=f=3000', outputFileName];
-        }
-        else if (currentActiveTool === "merge-video" || currentActiveTool === "merge-audio") {
-          const file2 = uploadedFiles[1];
-          const inputName2 = `input2.${file2.name.split('.').pop()}`;
-          ffmpeg.FS('writeFile', inputName2, await fetchFile(file2));
-          
-          outputFileName = currentActiveTool.includes("video") ? "merged.mp4" : "merged.mp3";
-          outputMimeType = currentActiveTool.includes("video") ? "video/mp4" : "audio/mpeg";
-          
-          ffmpeg.FS('writeFile', 'list.txt', `file '${inputName1}'\nfile '${inputName2}'`);
-          ffmpegCommand = ['-f', 'concat', '-safe', '0', '-i', 'list.txt', '-c', 'copy', outputFileName];
-        }
-        else if (currentActiveTool === "add-music") {
-          const file2 = uploadedFiles[1];
-          const inputName2 = `input2.${file2.name.split('.').pop()}`;
-          ffmpeg.FS('writeFile', inputName2, await fetchFile(file2));
-
-          outputFileName = "music_added.mp4";
-          outputMimeType = "video/mp4";
-          // Mix video and audio together
-          ffmpegCommand = ['-i', inputName1, '-i', inputName2, '-c:v', 'copy', '-c:a', 'aac', '-map', '0:v:0', '-map', '1:a:0', '-shortest', outputFileName];
-        }
-
-        await ffmpeg.run(...ffmpegCommand);
-
-        const data = ffmpeg.FS('readFile', outputFileName);
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: outputMimeType }));
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = outputFileName;
-        a.click();
-
-        player.src = url;
-
-      } catch (err) {
-        if(err.message !== "Cancelled by user") alert("Error processing: " + err.message);
-      } finally {
-        document.getElementById('export-overlay').classList.add('hidden-safe');
-        releaseWakeLock();
-        document.getElementById('media-upload').value = ""; 
-      }
+    // Register the service worker to allow offline/installation behavior
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker Registered!', reg))
+          .catch(err => console.error('Service Worker Failed!', err));
+      });
     }
   </script>
 </body>
