@@ -3,35 +3,186 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Editor Pro</title>
+  <title>Blind Editor Pro - Interface Test</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background-color: #0f172a; color: #f8fafc; }
+    body { background-color: #0f172a; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    .hidden-safe { display: none !important; }
   </style>
 </head>
-<body class="h-screen flex flex-col items-center justify-center p-6">
+<body class="min-h-screen flex flex-col items-center p-4">
 
-  <div class="w-full max-w-md bg-slate-900 rounded-2xl p-6 text-center border border-slate-800 shadow-xl">
-    <h1 class="text-3xl font-black text-blue-500 mb-2">Editor Pro</h1>
-    <p class="text-slate-400 mb-6 text-sm">Installation & Testing Base</p>
+  <div class="w-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
     
-    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6">
-      <p class="text-sm text-emerald-400 font-bold">✓ Ready for Installation</p>
-      <p class="text-xs text-slate-400 mt-1">Open this page on your mobile phone browser to install it onto your home screen.</p>
-    </div>
+    <header class="bg-slate-800 p-4 flex justify-between items-center border-b border-slate-700">
+      <h1 class="text-lg font-black tracking-wider">STUDIO INTERFACE</h1>
+      <div class="flex gap-4">
+        <button onclick="openModal('help-modal')" id="help-btn" aria-label="Open Interactive Help Center" class="text-slate-300 text-xl">❔</button>
+        <button onclick="openModal('settings-modal')" id="settings-btn" aria-label="Open Studio Settings" class="text-slate-300 text-xl">⚙️</button>
+      </div>
+    </header>
 
-    <p class="text-xs text-slate-500">Once installed, we will update this screen with our tools step-by-step.</p>
+    <main class="p-4 flex-1">
+      
+      <div class="flex gap-2 mb-4 bg-slate-800 p-1 rounded-xl" role="tablist">
+        <button onclick="switchTab('video-panel')" id="tab-btn-video" role="tab" aria-selected="true" class="flex-1 py-2 font-bold text-sm rounded-lg bg-blue-600 text-white transition">Video Tools</button>
+        <button onclick="switchTab('audio-panel')" id="tab-btn-audio" role="tab" aria-selected="false" class="flex-1 py-2 font-bold text-sm rounded-lg text-slate-400 transition">Audio Tools</button>
+      </div>
+
+      <div id="video-panel" class="grid grid-cols-1 gap-3" role="tabpanel" aria-label="Video Tools Options">
+        <button onclick="alert('Trim Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">1. Trim Video</button>
+        <button onclick="alert('Compress Video Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">2. Compress Video</button>
+        <button onclick="alert('Remove Noise Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">3. Remove Noise Video</button>
+        <button onclick="alert('Video to Audio Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">4. Video to Audio</button>
+        <button onclick="alert('Merge Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">5. Merge Videos</button>
+        <button onclick="alert('Insert Clip Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">6. Insert Clip</button>
+      </div>
+
+      <div id="audio-panel" class="grid grid-cols-1 gap-3 hidden-safe" role="tabpanel" aria-label="Audio Tools Options" aria-hidden="true">
+        <button onclick="alert('Trim Audio Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">1. Trim Audio</button>
+        <button onclick="alert('Compress Audio Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">2. Compress Audio</button>
+        <button onclick="alert('Remove Noise Audio Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">3. Remove Noise Audio</button>
+        <button onclick="alert('Audio to Video Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">4. Audio to Video</button>
+        <button onclick="alert('Merge Audio Interface Triggered')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold hover:bg-slate-700 transition">5. Merge Audios</button>
+        <button onclick="alert('Add Music Interface Triggered')" class="w-full text-left bg-gradient-to-r from-blue-600 to-indigo-600 p-4 rounded-xl font-bold shadow-md">6. Add Music to Video</button>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="help-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden-safe" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto flex flex-col">
+      <h2 id="help-title" tabindex="-1" class="text-xl font-black text-white mb-2 outline-none">Help Documentation</h2>
+      <p class="text-xs text-slate-400 mb-4">Click any tool button below to expand its voice user manual guide.</p>
+      
+      <div class="space-y-3 flex-1 mb-6">
+        
+        <div>
+          <button onclick="toggleHelpTopic('help-trim')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
+            <span>Trim Tool Help</span> <span id="help-trim-icon">＋</span>
+          </button>
+          <div id="help-trim" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 leading-relaxed" aria-live="polite">
+            Upload your clip. The engine reads out your total file length immediately. Input your exact start and end cut markers in seconds, then trigger processing to crop your media locally.
+          </div>
+        </div>
+
+        <div>
+          <button onclick="toggleHelpTopic('help-compress')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
+            <span>Compression Help</span> <span id="help-compress-icon">＋</span>
+          </button>
+          <div id="help-compress" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 leading-relaxed" aria-live="polite">
+            Reduces storage overhead. Select your file, choose the quality matrix inside your app settings drawer, and click process. The engine balances clarity and bits per second natively.
+          </div>
+        </div>
+
+        <div>
+          <button onclick="toggleHelpTopic('help-noise')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
+            <span>Denoise Help</span> <span id="help-noise-icon">＋</span>
+          </button>
+          <div id="help-noise" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 leading-relaxed" aria-live="polite">
+            Filters static audio frequencies. Our filter chains look for hums below 200Hz and hiss above 3000Hz, stripping background interference while keeping your vocal ranges untouched.
+          </div>
+        </div>
+
+        <div>
+          <button onclick="toggleHelpTopic('help-merge')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
+            <span>Merge Files Help</span> <span id="help-merge-icon">＋</span>
+          </button>
+          <div id="help-merge" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 leading-relaxed" aria-live="polite">
+            Combines items end-to-end. To select multiple files inside your phone's storage manager, long-press the first element, tap the second file, and confirm choices to drop them into our concatenator.
+          </div>
+        </div>
+
+      </div>
+
+      <button onclick="closeModal('help-modal', 'help-btn')" class="w-full bg-slate-800 text-red-400 font-bold py-3 rounded-xl border border-slate-700 shrink-0">Close Panel</button>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden-safe" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-5">
+      <h2 id="settings-title" tabindex="-1" class="text-xl font-black text-white outline-none">Studio Configurations</h2>
+      
+      <div>
+        <label for="set-format" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Default Export Extension</label>
+        <select id="set-format" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
+          <option value="mp4">MP4 Video Container (Standard)</option>
+          <option value="mkv">MKV Video Container (Lossless)</option>
+          <option value="mp3">MP3 Audio File</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="set-quality" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Compression Engine Profile</label>
+        <select id="set-quality" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
+          <option value="23">High Clarity (Balanced Processing Time)</option>
+          <option value="30">High Compression (Smallest File Size)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">App Sandbox System Memory</label>
+        <button onclick="alert('Studio memory lanes successfully wiped clean!')" class="w-full bg-slate-950 text-yellow-500 font-bold text-xs p-3 rounded-xl border border-amber-900/40 text-left hover:bg-slate-900 transition">
+          ⚠️ Clear App Cache & Refresh Engine Lanes
+        </button>
+      </div>
+
+      <button onclick="closeModal('settings-modal', 'settings-btn')" class="w-full bg-slate-800 text-red-400 font-bold py-3 rounded-xl border border-slate-700">Close Configurations</button>
+    </div>
   </div>
 
   <script>
-    // Register the service worker to allow offline/installation behavior
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker Registered!', reg))
-          .catch(err => console.error('Service Worker Failed!', err));
+    // TAB ENGINE
+    function switchTab(activeId) {
+      const isVideo = activeId === 'video-panel';
+      const vPanel = document.getElementById('video-panel');
+      const aPanel = document.getElementById('audio-panel');
+      const vBtn = document.getElementById('tab-btn-video');
+      const aBtn = document.getElementById('tab-btn-audio');
+
+      if (isVideo) {
+        vPanel.classList.remove('hidden-safe'); vPanel.removeAttribute('aria-hidden');
+        aPanel.classList.add('hidden-safe'); aPanel.setAttribute('aria-hidden', 'true');
+        vBtn.className = "flex-1 py-2 font-bold text-sm rounded-lg bg-blue-600 text-white transition"; vBtn.setAttribute('aria-selected', 'true');
+        aBtn.className = "flex-1 py-2 font-bold text-sm rounded-lg text-slate-400 transition"; aBtn.setAttribute('aria-selected', 'false');
+      } else {
+        aPanel.classList.remove('hidden-safe'); aPanel.removeAttribute('aria-hidden');
+        vPanel.classList.add('hidden-safe'); vPanel.setAttribute('aria-hidden', 'true');
+        aBtn.className = "flex-1 py-2 font-bold text-sm rounded-lg bg-blue-600 text-white transition"; aBtn.setAttribute('aria-selected', 'true');
+        vBtn.className = "flex-1 py-2 font-bold text-sm rounded-lg text-slate-400 transition"; vBtn.setAttribute('aria-selected', 'false');
+      }
+    }
+
+    // MODAL HANDLERS
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden-safe');
+      const focusTargetId = id === 'help-modal' ? 'help-title' : 'settings-title';
+      document.getElementById(focusTargetId).focus();
+    }
+
+    function closeModal(id, returnFocusId) {
+      document.getElementById(id).classList.add('hidden-safe');
+      document.getElementById(returnFocusId).focus();
+    }
+
+    // ACCESSIBLE INTERACTIVE HELP DIRECTORY ENGINE
+    function toggleHelpTopic(topicId) {
+      const target = document.getElementById(topicId);
+      const icon = document.getElementById(topicId + '-icon');
+      const isOpen = !target.classList.contains('hidden-safe');
+
+      // Close all directory rows to prevent screen pollution
+      ['help-trim', 'help-compress', 'help-noise', 'help-merge'].forEach(id => {
+        document.getElementById(id).classList.add('hidden-safe');
+        document.getElementById(id + '-icon').innerText = '＋';
       });
+
+      // Toggle current selection active
+      if (!isOpen) {
+        target.classList.remove('hidden-safe');
+        icon.innerText = '－';
+      }
     }
   </script>
 </body>
