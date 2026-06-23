@@ -1,7 +1,7 @@
 {
   "name": "Blind Editor Pro",
   "short_name": "Editor Pro",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
