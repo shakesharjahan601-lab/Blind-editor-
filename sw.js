@@ -1,31 +1,31 @@
-const CACHE_NAME = 'editor-base-v1';
-const ASSETS = [
-  'index.html',
-  'manifest.json'
-];
+const CACHE_NAME = 'editor-pro-v1';
 
+// We only cache the bare minimum structure to let the app open offline
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
-  );
   self.clients.claim();
 });
 
+// NETWORK-FIRST STRATEGY: Always pulls the latest GitHub changes automatically
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request))
+    fetch(e.request)
+      .then((response) => {
+        // If the network works, save a copy to the cache and return the fresh page
+        if (response && response.status === 200) {
+          const responseCopy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseCopy);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Only if there is NO internet, use the offline cached copy
+        return caches.match(e.request);
+      })
   );
 });
