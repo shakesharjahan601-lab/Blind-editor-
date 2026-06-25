@@ -1,17 +1,17 @@
 {
-  "name": "Blind Editor Pro",
   "short_name": "Editor Pro",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "orientation": "portrait",
+  "name": "Editor Studio Pro",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/8340/8340105.png",
-      "sizes": "512x512",
+      "src": "icon.png",
       "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
 }
