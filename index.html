@@ -6,6 +6,9 @@
   <title>Editor Pro</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
+  
   <style>
     body { background-color: #0f172a; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
     .hidden-safe { display: none !important; }
@@ -73,7 +76,8 @@
             <p>Line 2: Use the player controls to review your media track.</p>
             <p>Line 3: Pause and press Mark Cut Start where the cut should begin.</p>
             <p>Line 4: Pause and press Mark Cut End where the cut should stop.</p>
-            <p>Line 5: Hit the process button to cut out that section permanently.</p>
+            <p>Line 5: Tap Done with Selection to clear the screen and add it to memory.</p>
+            <p>Line 6: Repeat for other parts, then tap Cut Marked Sections to save.</p>
           </div>
         </div>
       </div>
@@ -104,28 +108,44 @@
           </div>
 
           <div id="marker-controls-container" class="hidden-safe grid grid-cols-2 gap-3">
-            <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl font-bold text-xs text-center">
+            <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 py-3 rounded-xl font-bold text-xs text-center">
               📍 Mark Cut Start
             </button>
-            <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl font-bold text-xs text-center">
+            <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 py-3 rounded-xl font-bold text-xs text-center">
               📍 Mark Cut End
             </button>
           </div>
 
-          <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
-            <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Active Cut Markers Selected</p>
-            <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
-            <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
+          <div id="selection-modifiers-container" class="hidden-safe grid grid-cols-2 gap-3">
+            <button onclick="clearCurrentMarkers()" class="bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-xs text-center">
+              ✕ Clear Markers
+            </button>
+            <button onclick="commitMarkerToAppMemory()" class="bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs text-center">
+              ✓ Done with Selection
+            </button>
           </div>
 
-          <button id="trim-process-btn" onclick="alert('WebAssembly core engine will process your marked segment here!')" class="hidden-safe w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
-            Cut Marked Section & Save Video
+          <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
+            <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Current Selection Status</p>
+            <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
+            <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
+            <p id="txt-total-cuts-saved" class="text-blue-400 font-bold border-t border-slate-800 pt-1 mt-1">Cuts In App Memory: 0 cuts</p>
+          </div>
+
+          <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+            Cut All Marked Sections & Save Video
           </button>
         </div>
 
       </div>
 
     </main>
+
+    <div id="loading-overlay" class="p-5 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe" role="alert" aria-live="assertive">
+      <div class="animate-spin rounded-full h-7 w-7 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
+      <p id="loading-text" class="text-xs font-bold text-yellow-400">Initializing Local Kernel...</p>
+    </div>
+
   </div>
 
   <div id="settings-layout" class="w-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5 hidden-safe">
@@ -154,6 +174,12 @@
   <script>
     let cutStartTime = null;
     let cutEndTime = null;
+    let internalCutListMemory = []; 
+    let activeUploadedFileBlob = null;
+
+    // WEB WEBASSEMBLY ENGINE ALLOCATION HOOKS
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: true });
 
     // VIEW ROUTING ENGINE
     function openPanel(panelId) {
@@ -223,16 +249,17 @@
       const targetFile = e.target.files[0];
       if (!targetFile) return;
 
+      activeUploadedFileBlob = targetFile;
       const mediaSourceURL = URL.createObjectURL(targetFile);
       studioVideoPlayer.src = mediaSourceURL;
 
       document.getElementById('player-container').classList.remove('hidden-safe');
       document.getElementById('marker-controls-container').classList.remove('hidden-safe');
+      document.getElementById('selection-modifiers-container').classList.remove('hidden-safe');
       document.getElementById('marker-status-readout').classList.remove('hidden-safe');
       document.getElementById('trim-process-btn').classList.remove('hidden-safe');
     });
 
-    // Realtime time tracking reporting loop
     studioVideoPlayer.addEventListener('timeupdate', function() {
       const currentSecs = Math.floor(studioVideoPlayer.currentTime);
       document.getElementById('reader-current-time').innerText = `Current Position: ${currentSecs}s`;
@@ -243,10 +270,8 @@
       document.getElementById('reader-total-duration').innerText = `Total Length: ${totalSecs}s`;
     });
 
-    // LIVE SEGMENT MARKER PLACEMENT MATRIX
     function markCurrentPlaybackTime(type) {
       const capturedTimestamp = Math.floor(studioVideoPlayer.currentTime);
-      
       if (type === 'start') {
         cutStartTime = capturedTimestamp;
         document.getElementById('txt-start-marker').innerText = `Cut Begins At: ${cutStartTime} Seconds`;
@@ -256,18 +281,135 @@
       }
     }
 
+    function clearCurrentMarkers() {
+      cutStartTime = null;
+      cutEndTime = null;
+      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
+      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
+    }
+
+    function commitMarkerToAppMemory() {
+      if (cutStartTime === null || cutEndTime === null) {
+        alert("Selection Error: Mark both a Start and an End point before hitting Done.");
+        return;
+      }
+      if (cutEndTime <= cutStartTime) {
+        alert("Selection Error: End marker must be greater than start marker.");
+        return;
+      }
+
+      internalCutListMemory.push({ start: cutStartTime, end: cutEndTime });
+      cutStartTime = null;
+      cutEndTime = null;
+      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
+      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
+      document.getElementById('txt-total-cuts-saved').innerText = `Cuts In App Memory: ${internalCutListMemory.length} cuts`;
+    }
+
     function resetTrimInterfaceState() {
       cutStartTime = null;
       cutEndTime = null;
+      internalCutListMemory = [];
+      activeUploadedFileBlob = null;
       trimFilePicker.value = "";
       studioVideoPlayer.src = "";
       document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
       document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
+      document.getElementById('txt-total-cuts-saved').innerText = "Cuts In App Memory: 0 cuts";
       
       document.getElementById('player-container').classList.add('hidden-safe');
       document.getElementById('marker-controls-container').classList.add('hidden-safe');
+      document.getElementById('selection-modifiers-container').classList.add('hidden-safe');
       document.getElementById('marker-status-readout').classList.add('hidden-safe');
       document.getElementById('trim-process-btn').classList.add('hidden-safe');
+    }
+
+    // HIGH SPEED WEBASSEMBLY RUNTIME PIPELINE (Saves the processed video)
+    async function executeMultiTrimRendering() {
+      if (!activeUploadedFileBlob) return;
+      
+      const totalDuration = Math.floor(studioVideoPlayer.duration);
+      const chosenVideoExtension = document.getElementById('set-video-format').value;
+      const finalFileName = `processed_studio_output.${chosenVideoExtension}`;
+
+      // Open screen loader element overlay
+      const overlayText = document.getElementById('loading-text');
+      const overlayScreen = document.getElementById('loading-overlay');
+      
+      overlayText.innerText = "Launching compiler kernel...";
+      overlayScreen.classList.remove('hidden-safe');
+
+      try {
+        // Initialize WebAssembly payload if dormant
+        if (!ffmpeg.isLoaded()) {
+          await ffmpeg.load();
+        }
+
+        overlayText.innerText = "Mounting video layers...";
+        const temporaryInputName = "raw_input_source.mp4";
+        ffmpeg.FS('writeFile', temporaryInputName, await fetchFile(activeUploadedFileBlob));
+
+        // Generate inverse timeline list (keep zones) from dropped cut locations
+        let keepZones = [];
+        let currentPosition = 0;
+
+        // Sort selections sequentially to prevent collision
+        internalCutListMemory.sort((a, b) => a.start - b.start);
+
+        internalCutListMemory.forEach(cutBlock => {
+          if (cutBlock.start > currentPosition) {
+            keepZones.push({ start: currentPosition, end: cutBlock.start });
+          }
+          currentPosition = cutBlock.end;
+        });
+
+        if (currentPosition < totalDuration) {
+          keepZones.push({ start: currentPosition, end: totalDuration });
+        }
+
+        // If no sections were committed, export the raw segment instead
+        if (internalCutListMemory.length === 0) {
+          keepZones = [{ start: 0, end: totalDuration }];
+        }
+
+        overlayText.innerText = "Executing high-speed stream cut... Do not lock screen.";
+        
+        let filterComplexScript = "";
+        let commandArguments = ['-i', temporaryInputName];
+
+        keepZones.forEach((zone, index) => {
+          filterComplexScript += `[0:v]trim=start=${zone.start}:end=${zone.end},setpts=PTS-STARTPTS[v${index}]; ` +
+                                 `[0:a]atrim=start=${zone.start}:end=${zone.end},asetpts=PTS-STARTPTS[a${index}]; `;
+        });
+
+        keepZones.forEach((_, index) => {
+          filterComplexScript += `[v${index}][a${index}]`;
+        });
+        
+        filterComplexScript += `concat=n=${keepZones.length}:v=1:a=1[outv][outa]`;
+
+        commandArguments.push('-filter_complex', filterComplexScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-crf', '23', '-preset', 'ultrafast', finalFileName);
+
+        // Fire execution command vector array directly into local system chip
+        await ffmpeg.run(...commandArguments);
+
+        overlayText.innerText = "Assembling download stream container...";
+        const finalBinaryBuffer = ffmpeg.FS('readFile', finalFileName);
+        const dynamicAnchor = document.createElement('a');
+        
+        dynamicAnchor.href = URL.createObjectURL(new Blob([finalBinaryBuffer.buffer], { type: `video/${chosenVideoExtension}` }));
+        dynamicAnchor.download = finalFileName;
+        dynamicAnchor.click();
+
+        overlayText.innerText = "Task completed successfully!";
+        resetTrimInterfaceState();
+      } catch (err) {
+        alert("Compiler Runtime Exception: " + err.message);
+      } finally {
+        setTimeout(() => {
+          overlayScreen.classList.add('hidden-safe');
+        }, 1500);
+      }
     }
   </script>
 </body>
