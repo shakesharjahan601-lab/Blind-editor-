@@ -2,30 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Editor Pro</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
   <link rel="manifest" href="manifest.json">
+  
+  <script src="coi-serviceworker.js"></script>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
   
   <style>
-    body { background-color: #0f172a; color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    /* STYLING RULES TO MAKE A WEB PAGE ACT LIKE A GENUINE STANDALONE APPLICATION */
+    html, body {
+      overflow: hidden; /* Blocks unwanted page scrolling outside boundaries */
+      overscroll-behavior: none; /* Blocks browser pull-to-refresh drag down actions */
+      user-select: none; /* Blocks text blue highlight selections when tapping screens */
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    body { 
+      background-color: #0f172a; 
+      color: #f8fafc; 
+      -webkit-tap-highlight-color: transparent; 
+    }
     .hidden-safe { display: none !important; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4">
+<body class="w-full h-screen flex flex-col items-center p-4 selection:bg-transparent">
 
-  <div id="main-app-container" class="w-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
+  <div id="main-app-container" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
     
-    <header id="master-navigation-header" class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700">
+    <header id="master-navigation-header" class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700 shrink-0">
       <button onclick="openPanel('video-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Video Tools</button>
       <button onclick="openPanel('audio-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Audio Tools</button>
       <button onclick="openPanel('help-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Help Center</button>
       <button onclick="openSettingsLayout()" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Studio Settings</button>
     </header>
 
-    <main class="p-5 flex-1">
+    <main class="p-5 flex-1 overflow-y-auto">
       
       <div id="welcome-screen" class="text-center py-12 space-y-2">
         <h1 class="text-2xl font-black text-blue-500 tracking-wide">EDITOR PRO</h1>
@@ -147,14 +166,14 @@
 
     </main>
 
-    <div id="loading-overlay" class="p-5 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe" role="alert" aria-live="assertive">
+    <div id="loading-overlay" class="p-5 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0" role="alert" aria-live="assertive">
       <div class="animate-spin rounded-full h-7 w-7 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
       <p id="loading-text" class="text-xs font-bold text-yellow-400">Initializing Local Kernel...</p>
     </div>
 
   </div>
 
-  <div id="settings-layout" class="w-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5 hidden-safe">
+  <div id="settings-layout" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5 hidden-safe overflow-y-auto">
     <h2 class="text-xl font-black text-white">Studio Configurations Only</h2>
     
     <div>
@@ -266,10 +285,19 @@
       document.getElementById('trim-process-btn').classList.remove('hidden-safe');
     });
 
-    // Realtime time tracking reporting loop
+    // SMART PLAYBACK LOOP WITH AUTO-JUMPING PAST CUTS
     studioVideoPlayer.addEventListener('timeupdate', function() {
-      const currentSecs = Math.floor(studioVideoPlayer.currentTime);
-      document.getElementById('reader-current-time').innerText = `Current Position: ${currentSecs}s`;
+      const currentSeconds = studioVideoPlayer.currentTime;
+      const displaySecs = Math.floor(currentSeconds);
+      document.getElementById('reader-current-time').innerText = `Current Position: ${displaySecs}s`;
+
+      for (let i = 0; i < internalCutListMemory.length; i++) {
+        const savedCut = internalCutListMemory[i];
+        if (currentSeconds >= savedCut.start && currentSeconds < savedCut.end) {
+          studioVideoPlayer.currentTime = savedCut.end;
+          break;
+        }
+      }
     });
 
     studioVideoPlayer.addEventListener('loadedmetadata', function() {
@@ -277,7 +305,7 @@
       document.getElementById('reader-total-duration').innerText = `Total Length: ${totalSecs}s`;
     });
 
-    // HIGH STABILITY BUTTON CLICKS INSTEAD OF JUMPY BROWSER SLIDERS
+    // HIGH STABILITY BUTTON CLICKS
     function toggleStudioPlayback() {
       const playBtn = document.getElementById('btn-play-toggle');
       if (studioVideoPlayer.paused) {
