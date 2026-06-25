@@ -15,7 +15,7 @@
 
   <div id="main-app-container" class="w-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
     
-    <header class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700">
+    <header id="master-navigation-header" class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700">
       <button onclick="openPanel('video-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Video Tools</button>
       <button onclick="openPanel('audio-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Audio Tools</button>
       <button onclick="openPanel('help-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Help Center</button>
@@ -69,23 +69,60 @@
             <span>Trim Video Help</span> <span>＋</span>
           </button>
           <div id="guide-trim" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
-            <p>Line 1: Upload your primary media clip file container.</p>
-            <p>Line 2: Swipe down to read out the automated duration specs.</p>
-            <p>Line 3: Type your desired start cutoff point into box one.</p>
-            <p>Line 4: Type your desired end cutoff point into box two.</p>
-            <p>Line 5: Hit the process action trigger to compile changes.</p>
+            <p>Line 1: Upload your video file using the choose button.</p>
+            <p>Line 2: Use the player controls to review your media track.</p>
+            <p>Line 3: Pause and press Mark Cut Start where the cut should begin.</p>
+            <p>Line 4: Pause and press Mark Cut End where the cut should stop.</p>
+            <p>Line 5: Hit the process button to cut out that section permanently.</p>
           </div>
         </div>
-
       </div>
 
       <div id="tool-workspace" class="hidden-safe space-y-4">
         <button onclick="goBackToMenu()" class="text-sm font-bold text-blue-400 underline">← Return to Main Menu</button>
         <h2 id="workspace-title" class="text-xl font-black text-white">Active Tool</h2>
-        <div class="p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
+        
+        <div id="generic-placeholder" class="hidden-safe p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
           <p class="text-yellow-500 font-bold mb-1">⚠️ Status Alert</p>
           <p>The <span id="placeholder-tool-name" class="text-white font-bold">Tool</span> feature is not updated yet. Please check back for future live updates.</p>
         </div>
+
+        <div id="trim-active-workspace" class="hidden-safe space-y-4">
+          
+          <div>
+            <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Step 1: Choose Target Video</label>
+            <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+          </div>
+
+          <div id="player-container" class="hidden-safe bg-black rounded-xl overflow-hidden border border-slate-800">
+            <video id="studio-video-player" controls class="w-full max-h-48 bg-black"></video>
+            
+            <div class="p-3 bg-slate-950 text-xs flex justify-between border-t border-slate-800" role="status" aria-live="polite">
+              <span id="reader-current-time" class="text-slate-300">Current Position: 0s</span>
+              <span id="reader-total-duration" class="text-slate-400">Total Length: 0s</span>
+            </div>
+          </div>
+
+          <div id="marker-controls-container" class="hidden-safe grid grid-cols-2 gap-3">
+            <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl font-bold text-xs text-center">
+              📍 Mark Cut Start
+            </button>
+            <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl font-bold text-xs text-center">
+              📍 Mark Cut End
+            </button>
+          </div>
+
+          <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
+            <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Active Cut Markers Selected</p>
+            <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
+            <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
+          </div>
+
+          <button id="trim-process-btn" onclick="alert('WebAssembly core engine will process your marked segment here!')" class="hidden-safe w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+            Cut Marked Section & Save Video
+          </button>
+        </div>
+
       </div>
 
     </main>
@@ -115,10 +152,14 @@
   </div>
 
   <script>
+    let cutStartTime = null;
+    let cutEndTime = null;
+
     // VIEW ROUTING ENGINE
     function openPanel(panelId) {
       document.getElementById('welcome-screen').classList.add('hidden-safe');
       document.getElementById('tool-workspace').classList.add('hidden-safe');
+      document.getElementById('master-navigation-header').classList.remove('hidden-safe');
       
       ['video-panel', 'audio-panel', 'help-panel'].forEach(id => {
         document.getElementById(id).classList.add('hidden-safe');
@@ -127,7 +168,6 @@
       document.getElementById(panelId).classList.remove('hidden-safe');
     }
 
-    // ISOLATED SETTINGS HANDLERS
     function openSettingsLayout() {
       document.getElementById('main-app-container').classList.add('hidden-safe');
       document.getElementById('settings-layout').classList.remove('hidden-safe');
@@ -138,31 +178,96 @@
       document.getElementById('main-app-container').classList.remove('hidden-safe');
     }
 
-    // INTERACTIVE HELP HANDLER
     function toggleHelpTopic(id) {
       const el = document.getElementById(id);
       const isClosed = el.classList.contains('hidden-safe');
-      
       ['guide-merge', 'guide-trim'].forEach(item => document.getElementById(item).classList.add('hidden-safe'));
-      
-      if (isClosed) {
-        el.classList.remove('hidden-safe');
-      }
+      if (isClosed) el.classList.remove('hidden-safe');
     }
 
-    // CLEAN ACTION WORKSPACE FUNCTION
+    // WORKSPACE CORE ROUTER
     function enterToolWorkspace(toolName) {
+      document.getElementById('master-navigation-header').classList.add('hidden-safe');
       document.getElementById('video-panel').classList.add('hidden-safe');
       document.getElementById('audio-panel').classList.add('hidden-safe');
       
       document.getElementById('workspace-title').innerText = toolName;
-      document.getElementById('placeholder-tool-name').innerText = toolName;
+      
+      const isTrimTool = (toolName === 'Trim Video');
+      
+      if (isTrimTool) {
+        document.getElementById('generic-placeholder').classList.add('hidden-safe');
+        document.getElementById('trim-active-workspace').classList.remove('hidden-safe');
+        resetTrimInterfaceState();
+      } else {
+        document.getElementById('trim-active-workspace').classList.add('hidden-safe');
+        document.getElementById('placeholder-tool-name').innerText = toolName;
+        document.getElementById('generic-placeholder').classList.remove('hidden-safe');
+      }
+      
       document.getElementById('tool-workspace').classList.remove('hidden-safe');
     }
 
     function goBackToMenu() {
+      document.getElementById('studio-video-player').pause();
       document.getElementById('tool-workspace').classList.add('hidden-safe');
+      document.getElementById('master-navigation-header').classList.remove('hidden-safe');
       document.getElementById('welcome-screen').classList.remove('hidden-safe');
+    }
+
+    // PLAYBACK SPECIFIC LOGIC INTERFACES
+    const trimFilePicker = document.getElementById('trim-file-picker');
+    const studioVideoPlayer = document.getElementById('studio-video-player');
+
+    trimFilePicker.addEventListener('change', function(e) {
+      const targetFile = e.target.files[0];
+      if (!targetFile) return;
+
+      const mediaSourceURL = URL.createObjectURL(targetFile);
+      studioVideoPlayer.src = mediaSourceURL;
+
+      document.getElementById('player-container').classList.remove('hidden-safe');
+      document.getElementById('marker-controls-container').classList.remove('hidden-safe');
+      document.getElementById('marker-status-readout').classList.remove('hidden-safe');
+      document.getElementById('trim-process-btn').classList.remove('hidden-safe');
+    });
+
+    // Realtime time tracking reporting loop
+    studioVideoPlayer.addEventListener('timeupdate', function() {
+      const currentSecs = Math.floor(studioVideoPlayer.currentTime);
+      document.getElementById('reader-current-time').innerText = `Current Position: ${currentSecs}s`;
+    });
+
+    studioVideoPlayer.addEventListener('loadedmetadata', function() {
+      const totalSecs = Math.floor(studioVideoPlayer.duration);
+      document.getElementById('reader-total-duration').innerText = `Total Length: ${totalSecs}s`;
+    });
+
+    // LIVE SEGMENT MARKER PLACEMENT MATRIX
+    function markCurrentPlaybackTime(type) {
+      const capturedTimestamp = Math.floor(studioVideoPlayer.currentTime);
+      
+      if (type === 'start') {
+        cutStartTime = capturedTimestamp;
+        document.getElementById('txt-start-marker').innerText = `Cut Begins At: ${cutStartTime} Seconds`;
+      } else if (type === 'end') {
+        cutEndTime = capturedTimestamp;
+        document.getElementById('txt-end-marker').innerText = `Cut Ends At: ${cutEndTime} Seconds`;
+      }
+    }
+
+    function resetTrimInterfaceState() {
+      cutStartTime = null;
+      cutEndTime = null;
+      trimFilePicker.value = "";
+      studioVideoPlayer.src = "";
+      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
+      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
+      
+      document.getElementById('player-container').classList.add('hidden-safe');
+      document.getElementById('marker-controls-container').classList.add('hidden-safe');
+      document.getElementById('marker-status-readout').classList.add('hidden-safe');
+      document.getElementById('trim-process-btn').classList.add('hidden-safe');
     }
   </script>
 </body>
