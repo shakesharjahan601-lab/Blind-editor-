@@ -10,27 +10,9 @@
   
   <link rel="manifest" href="manifest.json">
   
-  <script>
-    if (!window.crossOriginIsolated && window.location.protocol === 'https:') {
-      const script = document.createElement('script');
-      script.src = 'coi-serviceworker.js';
-      document.head.appendChild(script);
-      
-      // Force an instant single reload if the browser hasn't activated the lanes yet
-      if (navigator.serviceWorker) {
-        navigator.serviceWorker.register('coi-serviceworker.js').then(() => {
-          setTimeout(() => {
-            if (!window.crossOriginIsolated) {
-              window.location.reload();
-            }
-          }, 500);
-        });
-      }
-    }
-  </script>
+  <script src="mini-coi.js" scope="./"></script>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
   
   <style>
@@ -89,7 +71,6 @@
 
       <div id="help-panel" class="hidden-safe space-y-4">
         <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Manuals Directory</h2>
-        
         <div>
           <button onclick="toggleHelpTopic('guide-merge')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
             <span>Merge Video Help</span> <span>＋</span>
@@ -101,7 +82,6 @@
             <p>Line 4: Press confirm to combine both files sequentially.</p>
           </div>
         </div>
-
         <div>
           <button onclick="toggleHelpTopic('guide-trim')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
             <span>Trim Video Help</span> <span>＋</span>
@@ -127,7 +107,6 @@
         </div>
 
         <div id="trim-active-workspace" class="hidden-safe space-y-4">
-          
           <div>
             <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Step 1: Choose Target Video</label>
             <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
@@ -177,21 +156,17 @@
             Cut All Marked Sections & Save Video
           </button>
         </div>
-
       </div>
-
     </main>
 
     <div id="loading-overlay" class="p-5 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0" role="alert" aria-live="assertive">
       <div class="animate-spin rounded-full h-7 w-7 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
       <p id="loading-text" class="text-xs font-bold text-yellow-400">Initializing Local Kernel...</p>
     </div>
-
   </div>
 
   <div id="settings-layout" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5 hidden-safe overflow-y-auto">
     <h2 class="text-xl font-black text-white">Studio Configurations Only</h2>
-    
     <div>
       <label for="set-video-format" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Default Video Extension</label>
       <select id="set-video-format" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
@@ -199,7 +174,6 @@
         <option value="mkv">MKV Container (Lossless)</option>
       </select>
     </div>
-
     <div>
       <label for="set-audio-format" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Default Audio Extension</label>
       <select id="set-audio-format" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
@@ -208,7 +182,6 @@
         <option value="m4a">M4A File (AAC Audio)</option>
       </select>
     </div>
-
     <button onclick="closeSettingsLayout()" class="w-full bg-slate-800 text-red-400 font-bold py-3 rounded-xl border border-slate-700 mt-4 block">Exit Studio Settings</button>
   </div>
 
@@ -225,251 +198,129 @@
       document.getElementById('welcome-screen').classList.add('hidden-safe');
       document.getElementById('tool-workspace').classList.add('hidden-safe');
       document.getElementById('master-navigation-header').classList.remove('hidden-safe');
-      
-      ['video-panel', 'audio-panel', 'help-panel'].forEach(id => {
-        document.getElementById(id).classList.add('hidden-safe');
-      });
-
+      ['video-panel', 'audio-panel', 'help-panel'].forEach(id => document.getElementById(id).classList.add('hidden-safe'));
       document.getElementById(panelId).classList.remove('hidden-safe');
     }
 
-    // WORKSPACE MODIFIERS
     function openSettingsLayout() {
       document.getElementById('main-app-container').classList.add('hidden-safe');
       document.getElementById('settings-layout').classList.remove('hidden-safe');
     }
 
-    function closeSettingsLayout() {
-      document.getElementById('settings-layout').classList.add('hidden-safe');
-      document.getElementById('main-app-container').classList.remove('hidden-safe');
-    }
-
-    function toggleHelpTopic(id) {
-      const el = document.getElementById(id);
-      const isClosed = el.classList.contains('hidden-safe');
-      ['guide-merge', 'guide-trim'].forEach(item => document.getElementById(item).classList.add('hidden-safe'));
-      if (isClosed) el.classList.remove('hidden-safe');
-    }
-
-    function enterToolWorkspace(toolName) {
-      document.getElementById('master-navigation-header').classList.add('hidden-safe');
-      document.getElementById('video-panel').classList.add('hidden-safe');
-      document.getElementById('audio-panel').classList.add('hidden-safe');
-      
-      document.getElementById('workspace-title').innerText = toolName;
-      const isTrimTool = (toolName === 'Trim Video');
-      
-      if (isTrimTool) {
-        document.getElementById('generic-placeholder').classList.add('hidden-safe');
-        document.getElementById('trim-active-workspace').classList.remove('hidden-safe');
-        resetTrimInterfaceState();
-      } else {
-        document.getElementById('trim-active-workspace').classList.add('hidden-safe');
-        document.getElementById('placeholder-tool-name').innerText = toolName;
-        document.getElementById('generic-placeholder').classList.remove('hidden-safe');
-      }
-      
-      document.getElementById('tool-workspace').classList.remove('hidden-safe');
-    }
-
-    function goBackToMenu() {
-      document.getElementById('studio-video-player').pause();
-      document.getElementById('tool-workspace').classList.add('hidden-safe');
-      document.getElementById('master-navigation-header').classList.remove('hidden-safe');
-      document.getElementById('welcome-screen').classList.remove('hidden-safe');
-    }
-
-    const trimFilePicker = document.getElementById('trim-file-picker');
-    const studioVideoPlayer = document.getElementById('studio-video-player');
-
-    trimFilePicker.addEventListener('change', function(e) {
+    document.getElementById('trim-file-picker').addEventListener('change', function(e) {
       const targetFile = e.target.files[0];
       if (!targetFile) return;
-
       activeUploadedFileBlob = targetFile;
-      const mediaSourceURL = URL.createObjectURL(targetFile);
-      studioVideoPlayer.src = mediaSourceURL;
-
-      document.getElementById('player-container').classList.remove('hidden-safe');
-      document.getElementById('marker-controls-container').classList.remove('hidden-safe');
-      document.getElementById('selection-modifiers-container').classList.remove('hidden-safe');
-      document.getElementById('marker-status-readout').classList.remove('hidden-safe');
-      document.getElementById('trim-process-btn').classList.remove('hidden-safe');
+      studioVideoPlayer.src = URL.createObjectURL(targetFile);
+      ['player-container', 'marker-controls-container', 'selection-modifiers-container', 'marker-status-readout', 'trim-process-btn'].forEach(id => {
+        document.getElementById(id).classList.remove('hidden-safe');
+      });
     });
 
     studioVideoPlayer.addEventListener('timeupdate', function() {
-      const currentSeconds = studioVideoPlayer.currentTime;
-      const displaySecs = Math.floor(currentSeconds);
-      document.getElementById('reader-current-time').innerText = `Current Position: ${displaySecs}s`;
-
+      const cur = studioVideoPlayer.currentTime;
+      document.getElementById('reader-current-time').innerText = `Current Position: ${Math.floor(cur)}s`;
       for (let i = 0; i < internalCutListMemory.length; i++) {
-        const savedCut = internalCutListMemory[i];
-        if (currentSeconds >= savedCut.start && currentSeconds < savedCut.end) {
-          studioVideoPlayer.currentTime = savedCut.end;
+        if (cur >= internalCutListMemory[i].start && cur < internalCutListMemory[i].end) {
+          studioVideoPlayer.currentTime = internalCutListMemory[i].end;
           break;
         }
       }
     });
 
     studioVideoPlayer.addEventListener('loadedmetadata', function() {
-      const totalSecs = Math.floor(studioVideoPlayer.duration);
-      document.getElementById('reader-total-duration').innerText = `Total Length: ${totalSecs}s`;
+      document.getElementById('reader-total-duration').innerText = `Total Length: ${Math.floor(studioVideoPlayer.duration)}s`;
     });
 
     function toggleStudioPlayback() {
-      const playBtn = document.getElementById('btn-play-toggle');
+      const b = document.getElementById('btn-play-toggle');
       if (studioVideoPlayer.paused) {
         studioVideoPlayer.play();
-        playBtn.innerText = "⏸️ Pause Track";
-        playBtn.className = "flex-1 bg-amber-600 p-2 text-xs font-bold rounded-lg text-white";
+        b.innerText = "⏸️ Pause Track";
+        b.className = "flex-1 bg-amber-600 p-2 text-xs font-bold rounded-lg text-white";
       } else {
         studioVideoPlayer.pause();
-        playBtn.innerText = "⏯️ Play Track";
-        playBtn.className = "flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white";
+        b.innerText = "⏯️ Play Track";
+        b.className = "flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white";
       }
     }
 
-    function skipPlaybackSeconds(secondsToSkip) {
-      studioVideoPlayer.currentTime = Math.max(0, Math.min(studioVideoPlayer.duration, studioVideoPlayer.currentTime + secondsToSkip));
+    function skipPlaybackSeconds(s) {
+      studioVideoPlayer.currentTime = Math.max(0, Math.min(studioVideoPlayer.duration, studioVideoPlayer.currentTime + s));
     }
 
     function markCurrentPlaybackTime(type) {
-      const capturedTimestamp = Math.floor(studioVideoPlayer.currentTime);
+      const cap = Math.floor(studioVideoPlayer.currentTime);
       if (type === 'start') {
-        cutStartTime = capturedTimestamp;
+        cutStartTime = cap;
         document.getElementById('txt-start-marker').innerText = `Cut Begins At: ${cutStartTime} Seconds`;
-      } else if (type === 'end') {
-        cutEndTime = capturedTimestamp;
+      } else {
+        cutEndTime = cap;
         document.getElementById('txt-end-marker').innerText = `Cut Ends At: ${cutEndTime} Seconds`;
       }
     }
 
-    function clearCurrentMarkers() {
-      cutStartTime = null;
-      cutEndTime = null;
-      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
-      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
-    }
-
     function commitMarkerToAppMemory() {
-      if (cutStartTime === null || cutEndTime === null) {
-        alert("Selection Error: Mark both a Start and an End point before hitting Done.");
-        return;
-      }
-      if (cutEndTime <= cutStartTime) {
-        alert("Selection Error: End marker must be greater than start marker.");
-        return;
-      }
-
+      if (cutStartTime === null || cutEndTime === null || cutEndTime <= cutStartTime) return;
       internalCutListMemory.push({ start: cutStartTime, end: cutEndTime });
-      cutStartTime = null;
-      cutEndTime = null;
-      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
-      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
+      clearCurrentMarkers();
       document.getElementById('txt-total-cuts-saved').innerText = `Cuts In App Memory: ${internalCutListMemory.length} cuts`;
     }
 
-    function resetTrimInterfaceState() {
-      cutStartTime = null;
-      cutEndTime = null;
-      internalCutListMemory = [];
-      activeUploadedFileBlob = null;
-      trimFilePicker.value = "";
-      studioVideoPlayer.src = "";
+    function clearCurrentMarkers() {
+      cutStartTime = null; cutEndTime = null;
       document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
       document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
-      document.getElementById('txt-total-cuts-saved').innerText = "Cuts In App Memory: 0 cuts";
-      
-      const playBtn = document.getElementById('btn-play-toggle');
-      playBtn.innerText = "⏯️ Play / Pause";
-      playBtn.className = "flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white";
+    }
 
-      document.getElementById('player-container').classList.add('hidden-safe');
-      document.getElementById('marker-controls-container').classList.add('hidden-safe');
-      document.getElementById('selection-modifiers-container').classList.add('hidden-safe');
-      document.getElementById('marker-status-readout').classList.add('hidden-safe');
-      document.getElementById('trim-process-btn').classList.add('hidden-safe');
+    function resetTrimInterfaceState() {
+      internalCutListMemory = []; activeUploadedFileBlob = null;
+      clearCurrentMarkers();
+      document.getElementById('txt-total-cuts-saved').innerText = "Cuts In App Memory: 0 cuts";
     }
 
     async function executeMultiTrimRendering() {
       if (!activeUploadedFileBlob) return;
-      
-      const totalDuration = Math.floor(studioVideoPlayer.duration);
-      const chosenVideoExtension = document.getElementById('set-video-format').value;
-      const finalFileName = `processed_studio_output.${chosenVideoExtension}`;
-
-      const overlayText = document.getElementById('loading-text');
       const overlayScreen = document.getElementById('loading-overlay');
-      
-      overlayText.innerText = "Launching compiler kernel... Standby.";
+      document.getElementById('loading-text').innerText = "Running multi-cut processing kernel...";
       overlayScreen.classList.remove('hidden-safe');
 
       try {
-        if (!ffmpeg.isLoaded()) {
-          await ffmpeg.load();
-        }
+        if (!ffmpeg.isLoaded()) await ffmpeg.load();
+        const ext = document.getElementById('set-video-format').value;
+        const outName = `output.${ext}`;
+        ffmpeg.FS('writeFile', 'in.mp4', await fetchFile(activeUploadedFileBlob));
 
-        overlayText.innerText = "Mounting video layers...";
-        const temporaryInputName = "raw_input_source.mp4";
-        ffmpeg.FS('writeFile', temporaryInputName, await fetchFile(activeUploadedFileBlob));
-
-        let keepZones = [];
-        let currentPosition = 0;
-
-        internalCutListMemory.sort((a, b) => a.start - b.start);
-
-        internalCutListMemory.forEach(cutBlock => {
-          if (cutBlock.start > currentPosition) {
-            keepZones.push({ start: currentPosition, end: cutBlock.start });
-          }
-          currentPosition = cutBlock.end;
+        let keep = [], pos = 0, dur = Math.floor(studioVideoPlayer.duration);
+        internalCutListMemory.sort((a,b) => a.start - b.start);
+        internalCutListMemory.forEach(c => {
+          if (c.start > pos) keep.push({s: pos, e: c.start});
+          pos = c.end;
         });
+        if (pos < dur) keep.push({s: pos, e: dur});
+        if (!keep.length) keep = [{s:0, e:dur}];
 
-        if (currentPosition < totalDuration) {
-          keepZones.push({ start: currentPosition, end: totalDuration });
-        }
-
-        if (internalCutListMemory.length === 0) {
-          keepZones = [{ start: 0, end: totalDuration }];
-        }
-
-        overlayText.innerText = "Executing high-speed stream cut... Do not lock screen.";
-        
-        let filterComplexScript = "";
-        let commandArguments = ['-i', temporaryInputName];
-
-        keepZones.forEach((zone, index) => {
-          filterComplexScript += `[0:v]trim=start=${zone.start}:end=${zone.end},setpts=PTS-STARTPTS[v${index}]; ` +
-                                 `[0:a]atrim=start=${zone.start}:end=${zone.end},asetpts=PTS-STARTPTS[a${index}]; `;
+        let filter = "";
+        keep.forEach((z, i) => {
+          filter += `[0:v]trim=start=${z.s}:end=${z.e},setpts=PTS-STARTPTS[v${i}]; [0:a]atrim=start=${z.s}:end=${z.e},asetpts=PTS-STARTPTS[a${i}]; `;
         });
+        keep.forEach((_, i) => filter += `[v${i}][a${i}]`);
+        filter += `concat=n=${keep.length}:v=1:a=1[outv][outa]`;
 
-        keepZones.forEach((_, index) => {
-          filterComplexScript += `[v${index}][a${index}]`;
-        });
+        await ffmpeg.run('-i', 'in.mp4', '-filter_complex', filter, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-crf', '23', '-preset', 'ultrafast', outName);
         
-        filterComplexScript += `concat=n=${keepZones.length}:v=1:a=1[outv][outa]`;
-        commandArguments.push('-filter_complex', filterComplexScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-crf', '23', '-preset', 'ultrafast', finalFileName);
-
-        await ffmpeg.run(...commandArguments);
-
-        overlayText.innerText = "Assembling download stream container...";
-        const finalBinaryBuffer = ffmpeg.FS('readFile', finalFileName);
-        const dynamicAnchor = document.createElement('a');
-        
-        dynamicAnchor.href = URL.createObjectURL(new Blob([finalBinaryBuffer.buffer], { type: `video/${chosenVideoExtension}` }));
-        dynamicAnchor.download = finalFileName;
-        dynamicAnchor.click();
-
-        overlayText.innerText = "Task completed successfully!";
+        const data = ffmpeg.FS('readFile', outName);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([data.buffer], { type: `video/${ext}` }));
+        a.download = outName; a.click();
         resetTrimInterfaceState();
       } catch (err) {
         alert("Compiler Runtime Exception: " + err.message);
       } finally {
-        setTimeout(() => {
-          overlayScreen.classList.add('hidden-safe');
-        }, 1500);
+        overlayScreen.classList.add('hidden-safe');
       }
     }
+    function closeSettingsLayout() { document.getElementById('settings-layout').classList.add('hidden-safe'); document.getElementById('main-app-container').classList.remove('hidden-safe'); }
   </script>
 </body>
 </html>
