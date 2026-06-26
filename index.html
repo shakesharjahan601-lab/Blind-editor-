@@ -10,18 +10,34 @@
   
   <link rel="manifest" href="manifest.json">
   
-  <script src="coi-serviceworker.js"></script>
+  <script>
+    if (!window.crossOriginIsolated && window.location.protocol === 'https:') {
+      const script = document.createElement('script');
+      script.src = 'coi-serviceworker.js';
+      document.head.appendChild(script);
+      
+      // Force an instant single reload if the browser hasn't activated the lanes yet
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.register('coi-serviceworker.js').then(() => {
+          setTimeout(() => {
+            if (!window.crossOriginIsolated) {
+              window.location.reload();
+            }
+          }, 500);
+        });
+      }
+    }
+  </script>
   
   <script src="https://cdn.tailwindcss.com"></script>
   
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
   
   <style>
-    /* STYLING RULES TO MAKE A WEB PAGE ACT LIKE A GENUINE STANDALONE APPLICATION */
     html, body {
-      overflow: hidden; /* Blocks unwanted page scrolling outside boundaries */
-      overscroll-behavior: none; /* Blocks browser pull-to-refresh drag down actions */
-      user-select: none; /* Blocks text blue highlight selections when tapping screens */
+      overflow: hidden;
+      overscroll-behavior: none;
+      user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
     }
@@ -202,11 +218,9 @@
     let internalCutListMemory = []; 
     let activeUploadedFileBlob = null;
 
-    // WEB WEBASSEMBLY ENGINE ALLOCATION HOOKS
     const { createFFmpeg, fetchFile } = FFmpeg;
     const ffmpeg = createFFmpeg({ log: true });
 
-    // VIEW ROUTING ENGINE
     function openPanel(panelId) {
       document.getElementById('welcome-screen').classList.add('hidden-safe');
       document.getElementById('tool-workspace').classList.add('hidden-safe');
@@ -219,6 +233,7 @@
       document.getElementById(panelId).classList.remove('hidden-safe');
     }
 
+    // WORKSPACE MODIFIERS
     function openSettingsLayout() {
       document.getElementById('main-app-container').classList.add('hidden-safe');
       document.getElementById('settings-layout').classList.remove('hidden-safe');
@@ -236,14 +251,12 @@
       if (isClosed) el.classList.remove('hidden-safe');
     }
 
-    // WORKSPACE CORE ROUTER
     function enterToolWorkspace(toolName) {
       document.getElementById('master-navigation-header').classList.add('hidden-safe');
       document.getElementById('video-panel').classList.add('hidden-safe');
       document.getElementById('audio-panel').classList.add('hidden-safe');
       
       document.getElementById('workspace-title').innerText = toolName;
-      
       const isTrimTool = (toolName === 'Trim Video');
       
       if (isTrimTool) {
@@ -266,7 +279,6 @@
       document.getElementById('welcome-screen').classList.remove('hidden-safe');
     }
 
-    // PLAYBACK SPECIFIC LOGIC INTERFACES
     const trimFilePicker = document.getElementById('trim-file-picker');
     const studioVideoPlayer = document.getElementById('studio-video-player');
 
@@ -285,7 +297,6 @@
       document.getElementById('trim-process-btn').classList.remove('hidden-safe');
     });
 
-    // SMART PLAYBACK LOOP WITH AUTO-JUMPING PAST CUTS
     studioVideoPlayer.addEventListener('timeupdate', function() {
       const currentSeconds = studioVideoPlayer.currentTime;
       const displaySecs = Math.floor(currentSeconds);
@@ -305,7 +316,6 @@
       document.getElementById('reader-total-duration').innerText = `Total Length: ${totalSecs}s`;
     });
 
-    // HIGH STABILITY BUTTON CLICKS
     function toggleStudioPlayback() {
       const playBtn = document.getElementById('btn-play-toggle');
       if (studioVideoPlayer.paused) {
@@ -381,7 +391,6 @@
       document.getElementById('trim-process-btn').classList.add('hidden-safe');
     }
 
-    // HIGH SPEED WEBASSEMBLY RUNTIME PIPELINE
     async function executeMultiTrimRendering() {
       if (!activeUploadedFileBlob) return;
       
@@ -392,7 +401,7 @@
       const overlayText = document.getElementById('loading-text');
       const overlayScreen = document.getElementById('loading-overlay');
       
-      overlayText.innerText = "Launching compiler kernel...";
+      overlayText.innerText = "Launching compiler kernel... Standby.";
       overlayScreen.classList.remove('hidden-safe');
 
       try {
@@ -439,7 +448,6 @@
         });
         
         filterComplexScript += `concat=n=${keepZones.length}:v=1:a=1[outv][outa]`;
-
         commandArguments.push('-filter_complex', filterComplexScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-crf', '23', '-preset', 'ultrafast', finalFileName);
 
         await ffmpeg.run(...commandArguments);
