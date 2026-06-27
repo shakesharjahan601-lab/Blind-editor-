@@ -33,6 +33,14 @@
 </head>
 <body class="w-full h-screen flex flex-col items-center p-4 selection:bg-transparent">
 
+  <div id="update-notification-toast" class="hidden-safe fixed top-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-2xl z-50 flex flex-col gap-2 border border-blue-400 animate-bounce">
+    <div class="flex items-center gap-2">
+      <span>🚀</span>
+      <p class="text-xs font-bold">A fresh studio update is ready for your phone!</p>
+    </div>
+    <button onclick="window.location.reload(true)" class="w-full bg-white text-blue-600 font-bold py-1.5 text-xs rounded-lg shadow">Tap to Sync & Update Instantly</button>
+  </div>
+
   <div id="main-app-container" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
     
     <header id="master-navigation-header" class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700 shrink-0">
@@ -42,126 +50,134 @@
       <button onclick="openSettingsLayout()" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Studio Settings</button>
     </header>
 
-    <main class="p-5 flex-1 overflow-y-auto">
+    <main class="p-5 flex-1 overflow-y-auto flex flex-col justify-between">
       
-      <div id="welcome-screen" class="text-center py-12 space-y-2">
-        <h1 class="text-2xl font-black text-blue-500 tracking-wide">EDITOR PRO</h1>
-        <p class="text-xs text-slate-400">Please select a navigation category at the top to display tools.</p>
-      </div>
-
-      <div id="video-panel" class="hidden-safe space-y-3">
-        <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Video Operations</h2>
-        <button onclick="enterToolWorkspace('Merge Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Video</button>
-        <button onclick="enterToolWorkspace('Trim Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Video</button>
-        <button onclick="enterToolWorkspace('Compress Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Compress Video</button>
-        <button onclick="enterToolWorkspace('Remove Noise')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Remove Noise</button>
-        <button onclick="enterToolWorkspace('Video to Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Video to Audio</button>
-        <button onclick="enterToolWorkspace('Insert Clip')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Insert Clip</button>
-      </div>
-
-      <div id="audio-panel" class="hidden-safe space-y-3">
-        <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Audio Operations</h2>
-        <button onclick="enterToolWorkspace('Merge Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Audio</button>
-        <button onclick="enterToolWorkspace('Trim Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Audio</button>
-        <button onclick="enterToolWorkspace('Compress Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Compress Audio</button>
-        <button onclick="enterToolWorkspace('Remove Noise Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Remove Noise Audio</button>
-        <button onclick="enterToolWorkspace('Audio to Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Audio to Video</button>
-        <button onclick="enterToolWorkspace('Add Music to Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Add Music to Video</button>
-      </div>
-
-      <div id="help-panel" class="hidden-safe space-y-4">
-        <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Manuals Directory</h2>
-        <div>
-          <button onclick="toggleHelpTopic('guide-merge')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
-            <span>Merge Video Help</span> <span>＋</span>
-          </button>
-          <div id="guide-merge" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
-            <p>Line 1: Open the storage file system picker button.</p>
-            <p>Line 2: Long press your first video track to select it.</p>
-            <p>Line 3: Tap your second video track directly afterward.</p>
-            <p>Line 4: Press confirm to combine both files sequentially.</p>
-          </div>
-        </div>
-        <div>
-          <button onclick="toggleHelpTopic('guide-trim')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
-            <span>Trim Video Help</span> <span>＋</span>
-          </button>
-          <div id="guide-trim" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
-            <p>Line 1: Upload your video file using the choose button.</p>
-            <p>Line 2: Use the player controls to review your media track.</p>
-            <p>Line 3: Pause and press Mark Cut Start where the cut should begin.</p>
-            <p>Line 4: Pause and press Mark Cut End where the cut should stop.</p>
-            <p>Line 5: Tap Done with Selection to clear the screen and add it to memory.</p>
-            <p>Line 6: Repeat for other parts, then tap Cut Marked Sections to save.</p>
-          </div>
-        </div>
-      </div>
-
-      <div id="tool-workspace" class="hidden-safe space-y-4">
-        <button onclick="goBackToMenu()" class="text-sm font-bold text-blue-400 underline">← Return to Main Menu</button>
-        <h2 id="workspace-title" class="text-xl font-black text-white">Active Tool</h2>
-        
-        <div id="generic-placeholder" class="hidden-safe p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
-          <p class="text-yellow-500 font-bold mb-1">⚠️ Status Alert</p>
-          <p>The <span id="placeholder-tool-name" class="text-white font-bold">Tool</span> feature is not updated yet. Please check back for future live updates.</p>
+      <div class="flex-1">
+        <div id="welcome-screen" class="text-center py-12 space-y-2">
+          <h1 class="text-2xl font-black text-blue-500 tracking-wide">EDITOR PRO</h1>
+          <p class="text-xs text-slate-400">Please select a navigation category at the top to display tools.</p>
         </div>
 
-        <div id="trim-active-workspace" class="hidden-safe space-y-4">
+        <div id="video-panel" class="hidden-safe space-y-3">
+          <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Video Operations</h2>
+          <button onclick="enterToolWorkspace('Merge Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Video</button>
+          <button onclick="enterToolWorkspace('Trim Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Video</button>
+          <button onclick="enterToolWorkspace('Compress Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Compress Video</button>
+          <button onclick="enterToolWorkspace('Remove Noise')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Remove Noise</button>
+          <button onclick="enterToolWorkspace('Video to Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Video to Audio</button>
+          <button onclick="enterToolWorkspace('Insert Clip')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Insert Clip</button>
+        </div>
+
+        <div id="audio-panel" class="hidden-safe space-y-3">
+          <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Audio Operations</h2>
+          <button onclick="enterToolWorkspace('Merge Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Audio</button>
+          <button onclick="enterToolWorkspace('Trim Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Audio</button>
+          <button onclick="enterToolWorkspace('Compress Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Compress Audio</button>
+          <button onclick="enterToolWorkspace('Remove Noise Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Remove Noise Audio</button>
+          <button onclick="enterToolWorkspace('Audio to Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Audio to Video</button>
+          <button onclick="enterToolWorkspace('Add Music to Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Add Music to Video</button>
+        </div>
+
+        <div id="help-panel" class="hidden-safe space-y-4">
+          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Manuals Directory</h2>
           <div>
-            <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Step 1: Choose Target Video</label>
-            <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
-          </div>
-
-          <div id="player-container" class="hidden-safe bg-black rounded-xl overflow-hidden border border-slate-800">
-            <video id="studio-video-player" class="w-full max-h-48 bg-black"></video>
-            
-            <div class="p-3 bg-slate-950 text-xs flex justify-between border-t border-slate-800" role="status" aria-live="polite">
-              <span id="reader-current-time" class="text-slate-300">Current Position: 0s</span>
-              <span id="reader-total-duration" class="text-slate-400">Total Length: 0s</span>
-            </div>
-
-            <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2 justify-center">
-              <button onclick="skipPlaybackSeconds(-10)" aria-label="Rewind ten seconds" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏪ Back 10s</button>
-              <button onclick="toggleStudioPlayback()" id="btn-play-toggle" aria-label="Play or pause video track" class="flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white">⏯️ Play / Pause</button>
-              <button onclick="skipPlaybackSeconds(10)" aria-label="Fast forward ten seconds" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏩ Forward 10s</button>
+            <button onclick="toggleHelpTopic('guide-merge')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
+              <span>Merge Video Help</span> <span>＋</span>
+            </button>
+            <div id="guide-merge" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
+              <p>Line 1: Open the storage file system picker button.</p>
+              <p>Line 2: Long press your first video track to select it.</p>
+              <p>Line 3: Tap your second video track directly afterward.</p>
+              <p>Line 4: Press confirm to combine both files sequentially.</p>
             </div>
           </div>
+          <div>
+            <button onclick="toggleHelpTopic('guide-trim')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
+              <span>Trim Video Help</span> <span>＋</span>
+            </button>
+            <div id="guide-trim" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
+              <p>Line 1: Upload your video file using the choose button.</p>
+              <p>Line 2: Use the player controls to review your media track.</p>
+              <p>Line 3: Pause and press Mark Cut Start where the cut should begin.</p>
+              <p>Line 4: Pause and press Mark Cut End where the cut should stop.</p>
+              <p>Line 5: Tap Done with Selection to clear the screen and add it to memory.</p>
+              <p>Line 6: Repeat for other parts, then tap Cut Marked Sections to save.</p>
+            </div>
+          </div>
+        </div>
 
-          <div id="marker-controls-container" class="hidden-safe grid grid-cols-2 gap-3">
-            <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 py-3 rounded-xl font-bold text-xs text-center">
-              📍 Mark Cut Start
-            </button>
-            <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 py-3 rounded-xl font-bold text-xs text-center">
-              📍 Mark Cut End
-            </button>
+        <div id="tool-workspace" class="hidden-safe space-y-4">
+          <button onclick="goBackToMenu()" class="text-sm font-bold text-blue-400 underline">← Return to Main Menu</button>
+          <h2 id="workspace-title" class="text-xl font-black text-white">Active Tool</h2>
+          
+          <div id="generic-placeholder" class="hidden-safe p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
+            <p class="text-yellow-500 font-bold mb-1">⚠️ Status Alert</p>
+            <p>The <span id="placeholder-tool-name" class="text-white font-bold">Tool</span> feature is not updated yet. Please check back for future live updates.</p>
           </div>
 
-          <div id="selection-modifiers-container" class="hidden-safe grid grid-cols-2 gap-3">
-            <button onclick="clearCurrentMarkers()" class="bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-xs text-center">
-              ✕ Clear Markers
-            </button>
-            <button onclick="commitMarkerToAppMemory()" class="bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs text-center">
-              ✓ Done with Selection
+          <div id="trim-active-workspace" class="hidden-safe space-y-4">
+            <div>
+              <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Step 1: Choose Target Video</label>
+              <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+            </div>
+
+            <div id="player-container" class="hidden-safe bg-black rounded-xl overflow-hidden border border-slate-800">
+              <video id="studio-video-player" class="w-full max-h-48 bg-black" playsinline></video>
+              
+              <div class="p-3 bg-slate-950 text-xs flex justify-between border-t border-slate-800" aria-hidden="true">
+                <span id="reader-current-time" class="text-slate-300">Current Position: 0s</span>
+                <span id="reader-total-duration" class="text-slate-400">Total Length: 0s</span>
+              </div>
+
+              <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2 justify-center">
+                <button onclick="skipPlaybackSeconds(-10)" aria-label="Rewind ten seconds" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏪ Back 10s</button>
+                <button onclick="toggleStudioPlayback()" id="btn-play-toggle" aria-label="Play or pause video track" class="flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white">⏯️ Play / Pause</button>
+                <button onclick="skipPlaybackSeconds(10)" aria-label="Fast forward ten seconds" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏩ Forward 10s</button>
+              </div>
+            </div>
+
+            <div id="marker-controls-container" class="hidden-safe grid grid-cols-2 gap-3">
+              <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 py-3 rounded-xl font-bold text-xs text-center">
+                📍 Mark Cut Start
+              </button>
+              <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 py-3 rounded-xl font-bold text-xs text-center">
+                📍 Mark Cut End
+              </button>
+            </div>
+
+            <div id="selection-modifiers-container" class="hidden-safe grid grid-cols-2 gap-3">
+              <button onclick="clearCurrentMarkers()" class="bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-xs text-center">
+                ✕ Clear Markers
+              </button>
+              <button onclick="commitMarkerToAppMemory()" class="bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs text-center">
+                ✓ Done with Selection
+              </button>
+            </div>
+
+            <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
+              <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Current Selection Status</p>
+              <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
+              <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
+              <p id="txt-total-cuts-saved" class="text-blue-400 font-bold border-t border-slate-800 pt-1 mt-1">Cuts In App Memory: 0 cuts</p>
+            </div>
+
+            <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+              Cut All Marked Sections & Save Video
             </button>
           </div>
-
-          <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
-            <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Current Selection Status</p>
-            <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
-            <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
-            <p id="txt-total-cuts-saved" class="text-blue-400 font-bold border-t border-slate-800 pt-1 mt-1">Cuts In App Memory: 0 cuts</p>
-          </div>
-
-          <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
-            Cut All Marked Sections & Save Video
-          </button>
         </div>
       </div>
+
     </main>
 
-    <div id="loading-overlay" class="p-5 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0" role="alert" aria-live="assertive">
-      <div class="animate-spin rounded-full h-7 w-7 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
-      <p id="loading-text" class="text-xs font-bold text-yellow-400">Initializing Local Kernel...</p>
+    <div id="loading-overlay" class="p-6 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0 shadow-inner" role="status" aria-live="assertive">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-800 border-t-yellow-500 mx-auto mb-3"></div>
+      <p id="loading-text" class="text-xs font-bold text-yellow-400 tracking-wide uppercase mb-1">Initializing Local Compiler...</p>
+      
+      <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3 max-w-xs mx-auto border border-slate-700">
+        <div id="loading-progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-500 h-full w-0 transition-all duration-150"></div>
+      </div>
+      <span id="loading-percentage-readout" class="text-[11px] font-mono font-bold text-slate-400 block mt-1.5">Processing: 0%</span>
     </div>
   </div>
 
@@ -190,9 +206,37 @@
     let cutEndTime = null;
     let internalCutListMemory = []; 
     let activeUploadedFileBlob = null;
+    let totalComputedDurationSeconds = 0;
 
     const { createFFmpeg, fetchFile } = FFmpeg;
     const ffmpeg = createFFmpeg({ log: true });
+    const studioVideoPlayer = document.getElementById('studio-video-player');
+
+    // REGISTRATION FOR OPTIONAL SERVICE WORKER PULL CHANNELS
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        document.getElementById('update-notification-toast').classList.remove('hidden-safe');
+      });
+    }
+
+    // REALTIME PIPELINE LOGGER FOR CALCULATING RENDERING PERCENTAGE
+    ffmpeg.setLogger(({ type, message }) => {
+      if (type === 'info' && totalComputedDurationSeconds > 0) {
+        const matchTime = message.match(/time=(\d+):(\d+):(\d+)\.\d+/);
+        if (matchTime) {
+          const hours = parseInt(matchTime[1], 10);
+          const minutes = parseInt(matchTime[2], 10);
+          const seconds = parseInt(matchTime[3], 10);
+          const currentProgressSeconds = (hours * 3600) + (minutes * 60) + seconds;
+          
+          let calculatedPercentage = Math.floor((currentProgressSeconds / totalComputedDurationSeconds) * 100);
+          calculatedPercentage = Math.max(0, Math.min(100, calculatedPercentage));
+
+          document.getElementById('loading-progress-bar').style.width = `${calculatedPercentage}%`;
+          document.getElementById('loading-percentage-readout').innerText = `Processing: ${calculatedPercentage}%`;
+        }
+      }
+    });
 
     function openPanel(panelId) {
       document.getElementById('welcome-screen').classList.add('hidden-safe');
@@ -205,6 +249,41 @@
     function openSettingsLayout() {
       document.getElementById('main-app-container').classList.add('hidden-safe');
       document.getElementById('settings-layout').classList.remove('hidden-safe');
+    }
+
+    function toggleHelpTopic(id) {
+      const el = document.getElementById(id);
+      const isClosed = el.classList.contains('hidden-safe');
+      ['guide-merge', 'guide-trim'].forEach(item => document.getElementById(item).classList.add('hidden-safe'));
+      if (isClosed) el.classList.remove('hidden-safe');
+    }
+
+    function enterToolWorkspace(toolName) {
+      document.getElementById('master-navigation-header').classList.add('hidden-safe');
+      document.getElementById('video-panel').classList.add('hidden-safe');
+      document.getElementById('audio-panel').classList.add('hidden-safe');
+      
+      document.getElementById('workspace-title').innerText = toolName;
+      const isTrimTool = (toolName === 'Trim Video');
+      
+      if (isTrimTool) {
+        document.getElementById('generic-placeholder').classList.add('hidden-safe');
+        document.getElementById('trim-active-workspace').classList.remove('hidden-safe');
+        resetTrimInterfaceState();
+      } else {
+        document.getElementById('trim-active-workspace').classList.add('hidden-safe');
+        document.getElementById('placeholder-tool-name').innerText = toolName;
+        document.getElementById('generic-placeholder').classList.remove('hidden-safe');
+      }
+      
+      document.getElementById('tool-workspace').classList.remove('hidden-safe');
+    }
+
+    function goBackToMenu() {
+      studioVideoPlayer.pause();
+      document.getElementById('tool-workspace').classList.add('hidden-safe');
+      document.getElementById('master-navigation-header').classList.remove('hidden-safe');
+      document.getElementById('welcome-screen').classList.remove('hidden-safe');
     }
 
     document.getElementById('trim-file-picker').addEventListener('change', function(e) {
@@ -229,7 +308,8 @@
     });
 
     studioVideoPlayer.addEventListener('loadedmetadata', function() {
-      document.getElementById('reader-total-duration').innerText = `Total Length: ${Math.floor(studioVideoPlayer.duration)}s`;
+      totalComputedDurationSeconds = studioVideoPlayer.duration;
+      document.getElementById('reader-total-duration').innerText = `Total Length: ${Math.floor(totalComputedDurationSeconds)}s`;
     });
 
     function toggleStudioPlayback() {
@@ -282,7 +362,10 @@
     async function executeMultiTrimRendering() {
       if (!activeUploadedFileBlob) return;
       const overlayScreen = document.getElementById('loading-overlay');
-      document.getElementById('loading-text').innerText = "Running multi-cut processing kernel...";
+      document.getElementById('loading-text').innerText = "Slicing Media Layers...";
+      
+      document.getElementById('loading-progress-bar').style.width = "0%";
+      document.getElementById('loading-percentage-readout').innerText = "Processing: 0%";
       overlayScreen.classList.remove('hidden-safe');
 
       try {
@@ -291,7 +374,7 @@
         const outName = `output.${ext}`;
         ffmpeg.FS('writeFile', 'in.mp4', await fetchFile(activeUploadedFileBlob));
 
-        let keep = [], pos = 0, dur = Math.floor(studioVideoPlayer.duration);
+        let keep = [], pos = 0, dur = Math.floor(totalComputedDurationSeconds);
         internalCutListMemory.sort((a,b) => a.start - b.start);
         internalCutListMemory.forEach(c => {
           if (c.start > pos) keep.push({s: pos, e: c.start});
