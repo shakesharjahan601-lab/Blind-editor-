@@ -55,54 +55,29 @@
       <div class="flex-1">
         <div id="welcome-screen" class="text-center py-12 space-y-2">
           <h1 class="text-2xl font-black text-blue-500 tracking-wide">EDITOR PRO</h1>
-          <p class="text-xs text-slate-400">Please select a navigation category at the top to display tools.</p>
+          <p class="text-xs text-slate-400">Select a category above to load the local hardware studio tools.</p>
         </div>
 
         <div id="video-panel" class="hidden-safe space-y-3">
           <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Video Operations</h2>
-          <button onclick="enterToolWorkspace('Merge Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Video</button>
-          <button onclick="enterToolWorkspace('Trim Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Video</button>
-          <button onclick="enterToolWorkspace('Compress Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Compress Video</button>
-          <button onclick="enterToolWorkspace('Remove Noise')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Remove Noise</button>
-          <button onclick="enterToolWorkspace('Video to Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Video to Audio</button>
-          <button onclick="enterToolWorkspace('Insert Clip')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Insert Clip</button>
+          <button onclick="enterToolWorkspace('Merge Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Multiple Videos</button>
+          <button onclick="enterToolWorkspace('Trim Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Video Sections</button>
+          <button onclick="enterToolWorkspace('Video to Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Video to Audio (MP3)</button>
+          <button onclick="enterToolWorkspace('Compress Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 text-slate-500 font-bold block opacity-50" disabled>Compress Video (Soon)</button>
         </div>
 
         <div id="audio-panel" class="hidden-safe space-y-3">
           <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Audio Operations</h2>
-          <button onclick="mergeAudioWorkspace()" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Audio</button>
-          <button onclick="enterToolWorkspace('Trim Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Audio</button>
-          <button onclick="enterToolWorkspace('Compress Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Compress Audio</button>
-          <button onclick="enterToolWorkspace('Remove Noise Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Remove Noise Audio</button>
-          <button onclick="enterToolWorkspace('Audio to Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Audio to Video</button>
-          <button onclick="enterToolWorkspace('Add Music to Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Add Music to Video</button>
+          <button onclick="enterToolWorkspace('Trim Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 text-slate-500 font-bold block opacity-50" disabled>Trim Audio (Soon)</button>
         </div>
 
         <div id="help-panel" class="hidden-safe space-y-4">
           <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Manuals Directory</h2>
-          <div>
-            <button onclick="toggleHelpTopic('guide-merge')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
-              <span>Merge Video Help</span> <span>＋</span>
-            </button>
-            <div id="guide-merge" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
-              <p>Line 1: Open the storage file system picker button.</p>
-              <p>Line 2: Long press your first video track to select it.</p>
-              <p>Line 3: Tap your second video track directly afterward.</p>
-              <p>Line 4: Press confirm to combine both files sequentially.</p>
-            </div>
-          </div>
-          <div>
-            <button onclick="toggleHelpTopic('guide-trim')" class="w-full text-left bg-slate-800 p-3 rounded-xl border border-slate-700 text-sm font-bold flex justify-between items-center">
-              <span>Trim Video Help</span> <span>＋</span>
-            </button>
-            <div id="guide-trim" class="hidden-safe p-3 bg-slate-950 rounded-b-xl border-x border-b border-slate-800 text-xs text-slate-300 space-y-1">
-              <p>Line 1: Upload your video file using the choose button.</p>
-              <p>Line 2: Use the player controls to review your media track.</p>
-              <p>Line 3: Pause and press Mark Cut Start where the cut should begin.</p>
-              <p>Line 4: Pause and press Mark Cut End where the cut should stop.</p>
-              <p>Line 5: Tap Done with Selection to clear the screen and add it to memory.</p>
-              <p>Line 6: Repeat for other parts, then tap Cut Marked Sections to save.</p>
-            </div>
+          <div class="p-4 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
+            <p class="font-bold text-white">How to Merge Videos:</p>
+            <p>1. Tap 'Add Clip' to spawn a selector. Select your first file.</p>
+            <p>2. Repeat to add as many subsequent clips as you need.</p>
+            <p>3. Hit the Compile button to save the unified file.</p>
           </div>
         </div>
 
@@ -112,101 +87,98 @@
           
           <div id="generic-placeholder" class="hidden-safe p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
             <p class="text-yellow-500 font-bold mb-1">⚠️ Status Alert</p>
-            <p>The <span id="placeholder-tool-name" class="text-white font-bold">Tool</span> feature is not updated yet. Please check back for future live updates.</p>
+            <p>Feature layout loading hook missing.</p>
           </div>
 
           <div id="trim-active-workspace" class="hidden-safe space-y-4">
             <div>
-              <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Step 1: Choose Target Video</label>
+              <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Choose Target Video</label>
               <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
             </div>
 
             <div id="player-container" class="hidden-safe bg-black rounded-xl overflow-hidden border border-slate-800">
               <video id="studio-video-player" class="w-full max-h-48 bg-black" playsinline></video>
-              
               <div class="p-3 bg-slate-950 text-xs flex justify-between border-t border-slate-800" aria-hidden="true">
                 <span id="reader-current-time" class="text-slate-300">Current Position: 0s</span>
                 <span id="reader-total-duration" class="text-slate-400">Total Length: 0s</span>
               </div>
-
               <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2 justify-center">
-                <button onclick="skipPlaybackSeconds(-10)" aria-label="Rewind ten seconds" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏪ Back 10s</button>
-                <button onclick="toggleStudioPlayback()" id="btn-play-toggle" aria-label="Play or pause video track" class="flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white">⏯️ Play / Pause</button>
-                <button onclick="skipPlaybackSeconds(10)" aria-label="Fast forward ten seconds" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏩ Forward 10s</button>
+                <button onclick="skipPlaybackSeconds(-10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏪ Back 10s</button>
+                <button onclick="toggleStudioPlayback()" id="btn-play-toggle" class="flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white">⏯️ Play / Pause</button>
+                <button onclick="skipPlaybackSeconds(10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏩ Forward 10s</button>
               </div>
             </div>
 
             <div id="marker-controls-container" class="hidden-safe grid grid-cols-2 gap-3">
-              <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 py-3 rounded-xl font-bold text-xs text-center">
-                📍 Mark Cut Start
-              </button>
-              <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-red-400 py-3 rounded-xl font-bold text-xs text-center">
-                📍 Mark Cut End
-              </button>
+              <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 text-emerald-400 py-3 rounded-xl font-bold text-xs text-center">📍 Mark Cut Start</button>
+              <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 text-red-400 py-3 rounded-xl font-bold text-xs text-center">📍 Mark Cut End</button>
             </div>
 
             <div id="selection-modifiers-container" class="hidden-safe grid grid-cols-2 gap-3">
-              <button onclick="clearCurrentMarkers()" class="bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-xs text-center">
-                ✕ Clear Markers
-              </button>
-              <button onclick="commitMarkerToAppMemory()" class="bg-emerald-700 hover:bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs text-center">
-                ✓ Done with Selection
-              </button>
+              <button onclick="clearCurrentMarkers()" class="bg-slate-950 text-slate-400 py-2.5 rounded-xl font-bold text-xs text-center">✕ Clear Markers</button>
+              <button onclick="commitMarkerToAppMemory()" class="bg-emerald-700 text-white py-2.5 rounded-xl font-bold text-xs text-center">✓ Done with Selection</button>
             </div>
 
             <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
-              <p class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Current Selection Status</p>
               <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
               <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
               <p id="txt-total-cuts-saved" class="text-blue-400 font-bold border-t border-slate-800 pt-1 mt-1">Cuts In App Memory: 0 cuts</p>
             </div>
 
-            <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
-              Cut All Marked Sections & Save Video
+            <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-900/30">Cut Sections & Save Output</button>
+          </div>
+
+          <div id="merge-active-workspace" class="hidden-safe space-y-4">
+            <p class="text-xs text-slate-400">Add video tracks in the specific sequential chronological order you want them merged.</p>
+            <div id="merge-file-inputs-container" class="space-y-2"></div>
+            
+            <button onclick="addMergeInputSlot()" class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold">
+              ➕ Add Another Video Clip
+            </button>
+            
+            <button onclick="executeMultiVideoMerging()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg">
+              Stitch All Clips & Save Combined Video
             </button>
           </div>
+
+          <div id="v2a-active-workspace" class="hidden-safe space-y-4">
+            <div>
+              <label for="v2a-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Choose Source Video</label>
+              <input type="file" id="v2a-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+            </div>
+            <button onclick="executeAudioExtraction()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg">
+              Extract Soundtrack & Save MP3
+            </button>
+          </div>
+
         </div>
       </div>
-
     </main>
 
-    <div id="loading-overlay" class="p-6 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0 shadow-inner" role="status" aria-live="assertive">
-      <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-800 border-t-yellow-500 mx-auto mb-3"></div>
-      <p id="loading-text" class="text-xs font-bold text-yellow-400 tracking-wide uppercase mb-1">Initializing Local Compiler...</p>
-      
+    <div id="loading-overlay" class="p-6 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0" role="status" aria-live="assertive">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
+      <p id="loading-text" class="text-xs font-bold text-yellow-400 tracking-wide uppercase">Processing Studio Elements...</p>
       <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3 max-w-xs mx-auto border border-slate-700">
-        <div id="loading-progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-500 h-full w-0 transition-all duration-150"></div>
+        <div id="loading-progress-bar" class="bg-blue-500 h-full w-0 transition-all duration-150"></div>
       </div>
-      <span id="loading-percentage-readout" class="text-[11px] font-mono font-bold text-slate-400 block mt-1.5">Processing: 0%</span>
     </div>
   </div>
 
-  <div id="settings-layout" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl p-6 space-y-5 hidden-safe overflow-y-auto">
+  <div id="settings-layout" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 hidden-safe overflow-y-auto">
     <h2 class="text-xl font-black text-white">Studio Configurations Only</h2>
     <div>
       <label for="set-video-format" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Default Video Extension</label>
       <select id="set-video-format" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
         <option value="mp4">MP4 Container (Standard)</option>
-        <option value="mkv">MKV Container (Lossless)</option>
-      </select>
-    </div>
-    <div>
-      <label for="set-audio-format" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Default Audio Extension</label>
-      <select id="set-audio-format" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
-        <option value="mp3">MP3 File (Compressed)</option>
-        <option value="wav">WAV File (Lossless Waveform)</option>
-        <option value="m4a">M4A File (AAC Audio)</option>
       </select>
     </div>
     <button onclick="closeSettingsLayout()" class="w-full bg-slate-800 text-red-400 font-bold py-3 rounded-xl border border-slate-700 mt-4 block">Exit Studio Settings</button>
   </div>
 
   <script>
-    let cutStartTime = null;
-    let cutEndTime = null;
-    let internalCutListMemory = []; 
-    let activeUploadedFileBlob = null;
-    let totalComputedDurationSeconds = 0;
+    let cutStartTime = null; let cutEndTime = null;
+    let internalCutListMemory = []; let activeUploadedFileBlob = null;
+    let totalComputedDurationSeconds = 0; let mergeSlotCount = 0;
 
     const { createFFmpeg, fetchFile } = FFmpeg;
     const ffmpeg = createFFmpeg({ log: true });
@@ -217,34 +189,6 @@
         document.getElementById('update-notification-toast').classList.remove('hidden-safe');
       });
     }
-
-    // FIXED LOG STATE SWITCHER LOGGER
-    ffmpeg.setLogger(({ type, message }) => {
-      const overlayText = document.getElementById('loading-text');
-      
-      if (message.includes('Searching for codec') || message.includes('Decoding')) {
-        overlayText.innerText = "Analyzing Media Tracks...";
-      } else if (message.includes('Opening in append mode') || message.includes('built-in')) {
-        overlayText.innerText = "Configuring Audio/Video Lanes...";
-      }
-
-      if (type === 'info' && totalComputedDurationSeconds > 0) {
-        const matchTime = message.match(/time=(\d+):(\d+):(\d+)\.\d+/);
-        if (matchTime) {
-          overlayText.innerText = "Slicing Media Layers..."; 
-          const hours = parseInt(matchTime[1], 10);
-          const minutes = parseInt(matchTime[2], 10);
-          const seconds = parseInt(matchTime[3], 10);
-          const currentProgressSeconds = (hours * 3600) + (minutes * 60) + seconds;
-          
-          let calculatedPercentage = Math.floor((currentProgressSeconds / totalComputedDurationSeconds) * 100);
-          calculatedPercentage = Math.max(0, Math.min(100, calculatedPercentage));
-
-          document.getElementById('loading-progress-bar').style.width = `${calculatedPercentage}%`;
-          document.getElementById('loading-percentage-readout').innerText = `Processing: ${calculatedPercentage}%`;
-        }
-      }
-    });
 
     function openPanel(panelId) {
       document.getElementById('welcome-screen').classList.add('hidden-safe');
@@ -258,32 +202,33 @@
       document.getElementById('main-app-container').classList.add('hidden-safe');
       document.getElementById('settings-layout').classList.remove('hidden-safe');
     }
-
-    function toggleHelpTopic(id) {
-      const el = document.getElementById(id);
-      const isClosed = el.classList.contains('hidden-safe');
-      ['guide-merge', 'guide-trim'].forEach(item => document.getElementById(item).classList.add('hidden-safe'));
-      if (isClosed) el.classList.remove('hidden-safe');
+    function closeSettingsLayout() {
+      document.getElementById('settings-layout').classList.add('hidden-safe');
+      document.getElementById('main-app-container').classList.remove('hidden-safe');
     }
 
     function enterToolWorkspace(toolName) {
       document.getElementById('master-navigation-header').classList.add('hidden-safe');
-      document.getElementById('video-panel').classList.add('hidden-safe');
-      document.getElementById('audio-panel').classList.add('hidden-safe');
-      
+      ['video-panel', 'audio-panel', 'help-panel'].forEach(id => document.getElementById(id).classList.add('hidden-safe'));
       document.getElementById('workspace-title').innerText = toolName;
-      const isTrimTool = (toolName === 'Trim Video');
       
-      if (isTrimTool) {
-        document.getElementById('generic-placeholder').classList.add('hidden-safe');
+      // Clear workspace blocks
+      ['trim-active-workspace', 'merge-active-workspace', 'v2a-active-workspace', 'generic-placeholder'].forEach(id => document.getElementById(id).classList.add('hidden-safe'));
+
+      if (toolName === 'Trim Video') {
         document.getElementById('trim-active-workspace').classList.remove('hidden-safe');
         resetTrimInterfaceState();
+      } else if (toolName === 'Merge Video') {
+        document.getElementById('merge-active-workspace').classList.remove('hidden-safe');
+        document.getElementById('merge-file-inputs-container').innerHTML = "";
+        mergeSlotCount = 0;
+        addMergeInputSlot(); addMergeInputSlot(); // Default initialize with two open lanes
+      } else if (toolName === 'Video to Audio') {
+        document.getElementById('v2a-active-workspace').classList.remove('hidden-safe');
+        document.getElementById('v2a-file-picker').value = "";
       } else {
-        document.getElementById('trim-active-workspace').classList.add('hidden-safe');
-        document.getElementById('placeholder-tool-name').innerText = toolName;
         document.getElementById('generic-placeholder').classList.remove('hidden-safe');
       }
-      
       document.getElementById('tool-workspace').classList.remove('hidden-safe');
     }
 
@@ -294,9 +239,115 @@
       document.getElementById('welcome-screen').classList.remove('hidden-safe');
     }
 
+    // MULTIPLE FILE QUEUE SPAWNER
+    function addMergeInputSlot() {
+      mergeSlotCount++;
+      const wrapper = document.createElement('div');
+      wrapper.className = "p-3 bg-slate-800 rounded-xl border border-slate-700 flex flex-col gap-1.5";
+      wrapper.innerHTML = `
+        <label class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Clip Position #${mergeSlotCount}</label>
+        <input type="file" id="merge-file-${mergeSlotCount}" accept="video/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-slate-700 file:text-white">
+      `;
+      document.getElementById('merge-file-inputs-container').appendChild(wrapper);
+    }
+
+    // DYNAMIC CORE: MULTIPLE VIDEO MERGER ROUTINE
+    async function executeMultiVideoMerging() {
+      const overlayScreen = document.getElementById('loading-overlay');
+      const loadText = document.getElementById('loading-text');
+      loadText.innerText = "Initializing Multi-Stitch Layer...";
+      overlayScreen.classList.remove('hidden-safe');
+
+      try {
+        if (!ffmpeg.isLoaded()) await ffmpeg.load();
+
+        let filesToProcess = [];
+        for (let i = 1; i <= mergeSlotCount; i++) {
+          const fileInput = document.getElementById(`merge-file-${i}`);
+          if (fileInput && fileInput.files[0]) {
+            filesToProcess.push(fileInput.files[0]);
+          }
+        }
+
+        if (filesToProcess.length < 2) {
+          alert("Merge Layout Exception: You must assign a minimum of 2 media files to compile.");
+          overlayScreen.classList.add('hidden-safe');
+          return;
+        }
+
+        loadText.innerText = "Mounting multi-tracks to fast sandbox memory...";
+        let filterScript = "";
+        
+        for (let j = 0; j < filesToProcess.length; j++) {
+          const virtualName = `m${j}.mp4`;
+          ffmpeg.FS('writeFile', virtualName, await fetchFile(filesToProcess[j]));
+          
+          // Step-ahead scaling matrix to avoid video structural size mismatch crashes
+          filterScript += `[${j}:v]scale=1280:720,setsar=1[v${j}]; `;
+        }
+
+        let runArgs = [];
+        for (let j = 0; j < filesToProcess.length; j++) {
+          runArgs.push('-i', `m${j}.mp4`);
+          filterScript += `[v${j}][${j}:a]`;
+        }
+
+        filterScript += `concat=n=${filesToProcess.length}:v=1:a=1[outv][outa]`;
+        runArgs.push('-filter_complex', filterScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', 'merged_studio_output.mp4');
+
+        loadText.innerText = "Stitching video slices end-to-end... Don't change apps.";
+        await ffmpeg.run(...runArgs);
+
+        loadText.innerText = "Triggering gallery asset download container...";
+        const finalBuffer = ffmpeg.FS('readFile', 'merged_studio_output.mp4');
+        const dlLink = document.createElement('a');
+        dlLink.href = URL.createObjectURL(new Blob([finalBuffer.buffer], { type: 'video/mp4' }));
+        dlLink.download = "merged_studio_output.mp4";
+        dlLink.click();
+        goBackToMenu();
+      } catch (err) {
+        alert("Compiler Runtime Exception: " + err.message);
+      } finally {
+        overlayScreen.classList.add('hidden-safe');
+      }
+    }
+
+    // DYNAMIC CORE: LIGHTSPEED VIDEO TO AUDIO EXTRACTOR
+    async function executeAudioExtraction() {
+      const sourceInput = document.getElementById('v2a-file-picker').files[0];
+      if (!sourceInput) return;
+
+      const overlayScreen = document.getElementById('loading-overlay');
+      const loadText = document.getElementById('loading-text');
+      loadText.innerText = "Waking core framework...";
+      overlayScreen.classList.remove('hidden-safe');
+
+      try {
+        if (!ffmpeg.isLoaded()) await ffmpeg.load();
+
+        loadText.innerText = "Stripping visual array layers...";
+        ffmpeg.FS('writeFile', 'video_src.mp4', await fetchFile(sourceInput));
+
+        // Skip processing pixels completely. Strip and copy out audio frames instantly.
+        await ffmpeg.run('-i', 'video_src.mp4', '-vn', '-acodec', 'libmp3lame', '-q:a', '2', 'extracted_audio.mp3');
+
+        loadText.innerText = "Saving audio tracks...";
+        const data = ffmpeg.FS('readFile', 'extracted_audio.mp3');
+        const trigger = document.createElement('a');
+        trigger.href = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
+        trigger.download = "extracted_audio.mp3";
+        trigger.click();
+        goBackToMenu();
+      } catch (err) {
+        alert("Compiler Runtime Exception: " + err.message);
+      } finally {
+        overlayScreen.classList.add('hidden-safe');
+      }
+    }
+
+    // TRIM TIMELINE UTILITY CORE
     document.getElementById('trim-file-picker').addEventListener('change', function(e) {
-      const targetFile = e.target.files[0];
-      if (!targetFile) return;
+      const targetFile = e.target.files[0]; if (!targetFile) return;
       activeUploadedFileBlob = targetFile;
       studioVideoPlayer.src = URL.createObjectURL(targetFile);
       ['player-container', 'marker-controls-container', 'selection-modifiers-container', 'marker-status-readout', 'trim-process-btn'].forEach(id => {
@@ -309,8 +360,7 @@
       document.getElementById('reader-current-time').innerText = `Current Position: ${Math.floor(cur)}s`;
       for (let i = 0; i < internalCutListMemory.length; i++) {
         if (cur >= internalCutListMemory[i].start && cur < internalCutListMemory[i].end) {
-          studioVideoPlayer.currentTime = internalCutListMemory[i].end;
-          break;
+          studioVideoPlayer.currentTime = internalCutListMemory[i].end; break;
         }
       }
     });
@@ -322,105 +372,45 @@
 
     function toggleStudioPlayback() {
       const b = document.getElementById('btn-play-toggle');
-      if (studioVideoPlayer.paused) {
-        studioVideoPlayer.play();
-        b.innerText = "⏸️ Pause Track";
-        b.className = "flex-1 bg-amber-600 p-2 text-xs font-bold rounded-lg text-white";
-      } else {
-        studioVideoPlayer.pause();
-        b.innerText = "⏯️ Play Track";
-        b.className = "flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white";
-      }
+      if (studioVideoPlayer.paused) { studioVideoPlayer.play(); b.innerText = "⏸️ Pause Track"; } 
+      else { studioVideoPlayer.pause(); b.innerText = "⏯️ Play Track"; }
     }
-
-    function skipPlaybackSeconds(s) {
-      studioVideoPlayer.currentTime = Math.max(0, Math.min(studioVideoPlayer.duration, studioVideoPlayer.currentTime + s));
-    }
-
+    function skipPlaybackSeconds(s) { studioVideoPlayer.currentTime = Math.max(0, Math.min(studioVideoPlayer.duration, studioVideoPlayer.currentTime + s)); }
     function markCurrentPlaybackTime(type) {
       const cap = Math.floor(studioVideoPlayer.currentTime);
-      if (type === 'start') {
-        cutStartTime = cap;
-        document.getElementById('txt-start-marker').innerText = `Cut Begins At: ${cutStartTime} Seconds`;
-      } else {
-        cutEndTime = cap;
-        document.getElementById('txt-end-marker').innerText = `Cut Ends At: ${cutEndTime} Seconds`;
-      }
+      if (type === 'start') { cutStartTime = cap; document.getElementById('txt-start-marker').innerText = `Cut Begins At: ${cutStartTime}s`; } 
+      else { cutEndTime = cap; document.getElementById('txt-end-marker').innerText = `Cut Ends At: ${cutEndTime}s`; }
     }
-
     function commitMarkerToAppMemory() {
       if (cutStartTime === null || cutEndTime === null || cutEndTime <= cutStartTime) return;
-      internalCutListMemory.push({ start: cutStartTime, end: cutEndTime });
-      clearCurrentMarkers();
+      internalCutListMemory.push({ start: cutStartTime, end: cutEndTime }); clearCurrentMarkers();
       document.getElementById('txt-total-cuts-saved').innerText = `Cuts In App Memory: ${internalCutListMemory.length} cuts`;
     }
-
-    function clearCurrentMarkers() {
-      cutStartTime = null; cutEndTime = null;
-      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
-      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
-    }
-
-    function resetTrimInterfaceState() {
-      internalCutListMemory = []; activeUploadedFileBlob = null;
-      clearCurrentMarkers();
-      document.getElementById('txt-total-cuts-saved').innerText = "Cuts In App Memory: 0 cuts";
-    }
+    function clearCurrentMarkers() { cutStartTime = null; cutEndTime = null; document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet"; document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet"; }
+    function resetTrimInterfaceState() { internalCutListMemory = []; activeUploadedFileBlob = null; clearCurrentMarkers(); document.getElementById('txt-total-cuts-saved').innerText = "Cuts In App Memory: 0 cuts"; }
 
     async function executeMultiTrimRendering() {
       if (!activeUploadedFileBlob) return;
       const overlayScreen = document.getElementById('loading-overlay');
-      const overlayText = document.getElementById('loading-text');
-      
-      overlayText.innerText = "Waking Up Compiler Kernel...";
-      document.getElementById('loading-progress-bar').style.width = "0%";
-      document.getElementById('loading-percentage-readout').innerText = "Processing: 0%";
+      document.getElementById('loading-text').innerText = "Slicing Selected Layers...";
       overlayScreen.classList.remove('hidden-safe');
-
       try {
-        if (!ffmpeg.isLoaded()) {
-          overlayText.innerText = "Loading WebAssembly Core...";
-          await ffmpeg.load();
-        }
-
-        overlayText.innerText = "Mounting Video to Sandbox Memory...";
-        const ext = document.getElementById('set-video-format').value;
-        const outName = `output.${ext}`;
+        if (!ffmpeg.isLoaded()) await ffmpeg.load();
         ffmpeg.FS('writeFile', 'in.mp4', await fetchFile(activeUploadedFileBlob));
-
-        overlayText.innerText = "Calculating Keep Zones...";
         let keep = [], pos = 0, dur = Math.floor(totalComputedDurationSeconds);
         internalCutListMemory.sort((a,b) => a.start - b.start);
-        internalCutListMemory.forEach(c => {
-          if (c.start > pos) keep.push({s: pos, e: c.start});
-          pos = c.end;
-        });
-        if (pos < dur) keep.push({s: pos, e: dur});
-        if (!keep.length) keep = [{s:0, e:dur}];
-
+        internalCutListMemory.forEach(c => { if (c.start > pos) keep.push({s: pos, e: c.start}); pos = c.end; });
+        if (pos < dur) keep.push({s: pos, e: dur}); if (!keep.length) keep = [{s:0, e:dur}];
         let filter = "";
-        keep.forEach((z, i) => {
-          filter += `[0:v]trim=start=${z.s}:end=${z.e},setpts=PTS-STARTPTS[v${i}]; [0:a]atrim=start=${z.s}:end=${z.e},asetpts=PTS-STARTPTS[a${i}]; `;
-        });
+        keep.forEach((z, i) => { filter += `[0:v]trim=start=${z.s}:end=${z.e},setpts=PTS-STARTPTS[v${i}]; [0:a]atrim=start=${z.s}:end=${z.e},asetpts=PTS-STARTPTS[a${i}]; `; });
         keep.forEach((_, i) => filter += `[v${i}][a${i}]`);
         filter += `concat=n=${keep.length}:v=1:a=1[outv][outa]`;
-
-        overlayText.innerText = "Initializing Rendering Engine...";
-        await ffmpeg.run('-i', 'in.mp4', '-filter_complex', filter, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-crf', '23', '-preset', 'ultrafast', outName);
-        
-        overlayText.innerText = "Assembling Gallery Download...";
-        const data = ffmpeg.FS('readFile', outName);
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([data.buffer], { type: `video/${ext}` }));
-        a.download = outName; a.click();
-        resetTrimInterfaceState();
-      } catch (err) {
-        alert("Compiler Runtime Exception: " + err.message);
-      } finally {
-        overlayScreen.classList.add('hidden-safe');
-      }
+        await ffmpeg.run('-i', 'in.mp4', '-filter_complex', filter, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', 'output.mp4');
+        const data = ffmpeg.FS('readFile', 'output.mp4');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })); a.download = "output.mp4"; a.click();
+        resetTrimInterfaceState(); goBackToMenu();
+      } catch (err) { alert("Compiler Runtime Exception: " + err.message); } finally { overlayScreen.classList.add('hidden-safe'); }
     }
-    function closeSettingsLayout() { document.getElementById('settings-layout').classList.add('hidden-safe'); document.getElementById('main-app-container').classList.remove('hidden-safe'); }
   </script>
 </body>
 </html>
