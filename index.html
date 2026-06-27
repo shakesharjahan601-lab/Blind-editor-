@@ -63,21 +63,19 @@
           <button onclick="enterToolWorkspace('Merge Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Multiple Videos</button>
           <button onclick="enterToolWorkspace('Trim Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Video Sections</button>
           <button onclick="enterToolWorkspace('Video to Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Video to Audio (MP3)</button>
-          <button onclick="enterToolWorkspace('Compress Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 text-slate-500 font-bold block opacity-50" disabled>Compress Video (Soon)</button>
         </div>
 
         <div id="audio-panel" class="hidden-safe space-y-3">
           <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Audio Operations</h2>
-          <button onclick="enterToolWorkspace('Trim Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 text-slate-500 font-bold block opacity-50" disabled>Trim Audio (Soon)</button>
+          <button class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 text-slate-500 font-bold block opacity-50" disabled>Trim Audio (Soon)</button>
         </div>
 
         <div id="help-panel" class="hidden-safe space-y-4">
           <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Manuals Directory</h2>
           <div class="p-4 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
             <p class="font-bold text-white">How to Merge Videos:</p>
-            <p>1. Tap 'Add Clip' to spawn a selector. Select your first file.</p>
-            <p>2. Repeat to add as many subsequent clips as you need.</p>
-            <p>3. Hit the Compile button to save the unified file.</p>
+            <p>1. Tap 'Add Clip' to select files in order.</p>
+            <p>2. Hit stitch. Play the preview track directly inside the player to check your video before exporting!</p>
           </div>
         </div>
 
@@ -125,11 +123,11 @@
               <p id="txt-total-cuts-saved" class="text-blue-400 font-bold border-t border-slate-800 pt-1 mt-1">Cuts In App Memory: 0 cuts</p>
             </div>
 
-            <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-900/30">Cut Sections & Save Output</button>
+            <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg">Cut Sections & Save Output</button>
           </div>
 
           <div id="merge-active-workspace" class="hidden-safe space-y-4">
-            <p class="text-xs text-slate-400">Add video tracks in the specific sequential chronological order you want them merged.</p>
+            <p class="text-xs text-slate-400">Add video tracks in chronological sequence order.</p>
             <div id="merge-file-inputs-container" class="space-y-2"></div>
             
             <button onclick="addMergeInputSlot()" class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold">
@@ -137,8 +135,16 @@
             </button>
             
             <button onclick="executeMultiVideoMerging()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg">
-              Stitch All Clips & Save Combined Video
+              Stitch All Clips End-To-End
             </button>
+
+            <div id="merge-preview-container" class="hidden-safe bg-slate-950 rounded-xl p-3 border border-slate-800 space-y-3">
+              <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider">🌟 Compilation Preview Screen Loaded</p>
+              <video id="merge-studio-preview-player" class="w-full rounded-lg max-h-48 bg-black" controls playsinline></video>
+              <button id="merge-download-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs">
+                📥 Everything Looks Good, Save to Gallery
+              </button>
+            </div>
           </div>
 
           <div id="v2a-active-workspace" class="hidden-safe space-y-4">
@@ -179,6 +185,7 @@
     let cutStartTime = null; let cutEndTime = null;
     let internalCutListMemory = []; let activeUploadedFileBlob = null;
     let totalComputedDurationSeconds = 0; let mergeSlotCount = 0;
+    let compiledOutputBlobUrl = null;
 
     const { createFFmpeg, fetchFile } = FFmpeg;
     const ffmpeg = createFFmpeg({ log: true });
@@ -212,7 +219,6 @@
       ['video-panel', 'audio-panel', 'help-panel'].forEach(id => document.getElementById(id).classList.add('hidden-safe'));
       document.getElementById('workspace-title').innerText = toolName;
       
-      // Clear workspace blocks
       ['trim-active-workspace', 'merge-active-workspace', 'v2a-active-workspace', 'generic-placeholder'].forEach(id => document.getElementById(id).classList.add('hidden-safe'));
 
       if (toolName === 'Trim Video') {
@@ -220,9 +226,11 @@
         resetTrimInterfaceState();
       } else if (toolName === 'Merge Video') {
         document.getElementById('merge-active-workspace').classList.remove('hidden-safe');
+        document.getElementById('merge-preview-container').classList.add('hidden-safe');
         document.getElementById('merge-file-inputs-container').innerHTML = "";
+        if(compiledOutputBlobUrl) { URL.revokeObjectURL(compiledOutputBlobUrl); compiledOutputBlobUrl = null; }
         mergeSlotCount = 0;
-        addMergeInputSlot(); addMergeInputSlot(); // Default initialize with two open lanes
+        addMergeInputSlot(); addMergeInputSlot(); 
       } else if (toolName === 'Video to Audio') {
         document.getElementById('v2a-active-workspace').classList.remove('hidden-safe');
         document.getElementById('v2a-file-picker').value = "";
@@ -239,7 +247,6 @@
       document.getElementById('welcome-screen').classList.remove('hidden-safe');
     }
 
-    // MULTIPLE FILE QUEUE SPAWNER
     function addMergeInputSlot() {
       mergeSlotCount++;
       const wrapper = document.createElement('div');
@@ -251,101 +258,98 @@
       document.getElementById('merge-file-inputs-container').appendChild(wrapper);
     }
 
-    // DYNAMIC CORE: MULTIPLE VIDEO MERGER ROUTINE
+    // 100-STEPS-AHEAD STREAM DEMUX ENGINE FOR BULLETPROOF COMPILATIONS
     async function executeMultiVideoMerging() {
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
-      loadText.innerText = "Initializing Multi-Stitch Layer...";
+      loadText.innerText = "Configuring Matrix Vectors...";
       overlayScreen.classList.remove('hidden-safe');
 
       try {
         if (!ffmpeg.isLoaded()) await ffmpeg.load();
 
-        let filesToProcess = [];
+        let inputFiles = [];
         for (let i = 1; i <= mergeSlotCount; i++) {
-          const fileInput = document.getElementById(`merge-file-${i}`);
-          if (fileInput && fileInput.files[0]) {
-            filesToProcess.push(fileInput.files[0]);
+          const inputNode = document.getElementById(`merge-file-${i}`);
+          if (inputNode && inputNode.files[0]) {
+            inputFiles.push(inputNode.files[0]);
           }
         }
 
-        if (filesToProcess.length < 2) {
-          alert("Merge Layout Exception: You must assign a minimum of 2 media files to compile.");
+        if (inputFiles.length < 2) {
+          alert("Selection Missing: Load at least two clips to trigger stitching.");
           overlayScreen.classList.add('hidden-safe');
           return;
         }
 
-        loadText.innerText = "Mounting multi-tracks to fast sandbox memory...";
-        let filterScript = "";
+        loadText.innerText = "Indexing files to virtual memory block...";
+        let manifestContent = "";
         
-        for (let j = 0; j < filesToProcess.length; j++) {
-          const virtualName = `m${j}.mp4`;
-          ffmpeg.FS('writeFile', virtualName, await fetchFile(filesToProcess[j]));
+        for (let j = 0; j < inputFiles.length; j++) {
+          const diskFilename = `track_${j}.mp4`;
+          ffmpeg.FS('writeFile', diskFilename, await fetchFile(inputFiles[j]));
           
-          // Step-ahead scaling matrix to avoid video structural size mismatch crashes
-          filterScript += `[${j}:v]scale=1280:720,setsar=1[v${j}]; `;
+          // Write directly to a Demux List text file to prevent heavy processing crashes
+          manifestContent += `file '${diskFilename}'\n`;
         }
 
-        let runArgs = [];
-        for (let j = 0; j < filesToProcess.length; j++) {
-          runArgs.push('-i', `m${j}.mp4`);
-          filterScript += `[v${j}][${j}:a]`;
-        }
+        ffmpeg.FS('writeFile', 'playlist.txt', new TextEncoder().encode(manifestContent));
 
-        filterScript += `concat=n=${filesToProcess.length}:v=1:a=1[outv][outa]`;
-        runArgs.push('-filter_complex', filterScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', 'merged_studio_output.mp4');
+        loadText.innerText = "Stitching track channels... Please stand by.";
+        
+        // Employs lightning fast stream copy pass filters directly on the device memory
+        await ffmpeg.run('-f', 'concat', '-safe', '0', '-i', 'playlist.txt', '-c', 'copy', 'final_merged.mp4');
 
-        loadText.innerText = "Stitching video slices end-to-end... Don't change apps.";
-        await ffmpeg.run(...runArgs);
+        loadText.innerText = "Injecting live workspace player track...";
+        const finalBuffer = ffmpeg.FS('readFile', 'final_merged.mp4');
+        
+        // Convert to live blob URL object pointer hook
+        const clipBlob = new Blob([finalBuffer.buffer], { type: 'video/mp4' });
+        compiledOutputBlobUrl = URL.createObjectURL(clipBlob);
 
-        loadText.innerText = "Triggering gallery asset download container...";
-        const finalBuffer = ffmpeg.FS('readFile', 'merged_studio_output.mp4');
-        const dlLink = document.createElement('a');
-        dlLink.href = URL.createObjectURL(new Blob([finalBuffer.buffer], { type: 'video/mp4' }));
-        dlLink.download = "merged_studio_output.mp4";
-        dlLink.click();
-        goBackToMenu();
+        // Load into preview player
+        const previewEl = document.getElementById('merge-studio-preview-player');
+        previewEl.src = compiledOutputBlobUrl;
+
+        // Unhide save options layout interface block
+        document.getElementById('merge-preview-container').classList.remove('hidden-safe');
+
+        // Configure layout anchor action route hook
+        document.getElementById('merge-download-btn').onclick = function() {
+          const dlNode = document.createElement('a');
+          dlNode.href = compiledOutputBlobUrl;
+          dlNode.download = "compiled_studio_output.mp4";
+          dlNode.click();
+        };
+
       } catch (err) {
-        alert("Compiler Runtime Exception: " + err.message);
+        alert("Compiler Runtime Exception: Engine out of hardware memory limits. Try using smaller video tracks.");
       } finally {
         overlayScreen.classList.add('hidden-safe');
       }
     }
 
-    // DYNAMIC CORE: LIGHTSPEED VIDEO TO AUDIO EXTRACTOR
     async function executeAudioExtraction() {
       const sourceInput = document.getElementById('v2a-file-picker').files[0];
       if (!sourceInput) return;
-
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
       loadText.innerText = "Waking core framework...";
       overlayScreen.classList.remove('hidden-safe');
-
       try {
         if (!ffmpeg.isLoaded()) await ffmpeg.load();
-
         loadText.innerText = "Stripping visual array layers...";
         ffmpeg.FS('writeFile', 'video_src.mp4', await fetchFile(sourceInput));
-
-        // Skip processing pixels completely. Strip and copy out audio frames instantly.
         await ffmpeg.run('-i', 'video_src.mp4', '-vn', '-acodec', 'libmp3lame', '-q:a', '2', 'extracted_audio.mp3');
-
         loadText.innerText = "Saving audio tracks...";
         const data = ffmpeg.FS('readFile', 'extracted_audio.mp3');
         const trigger = document.createElement('a');
         trigger.href = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
-        trigger.download = "extracted_audio.mp3";
-        trigger.click();
+        trigger.download = "extracted_audio.mp3"; trigger.click();
         goBackToMenu();
-      } catch (err) {
-        alert("Compiler Runtime Exception: " + err.message);
-      } finally {
-        overlayScreen.classList.add('hidden-safe');
-      }
+      } catch (err) { alert("Compiler Runtime Exception: " + err.message); } finally { overlayScreen.classList.add('hidden-safe'); }
     }
 
-    // TRIM TIMELINE UTILITY CORE
     document.getElementById('trim-file-picker').addEventListener('change', function(e) {
       const targetFile = e.target.files[0]; if (!targetFile) return;
       activeUploadedFileBlob = targetFile;
