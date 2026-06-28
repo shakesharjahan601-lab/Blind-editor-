@@ -1,0 +1,10 @@
+{
+  "version": "1.0.1",
+  "apkUrl": "https://raw.githubusercontent.com/shakesharjahan601-lab/Blind-editor-/main/android/app/build/outputs/apk/debug/app-debug.apk",
+  "changelog": [
+    "Added professional in-app update engine.",
+    "Added 1-100% download progress tracker.",
+    "Added native update settings panel.",
+    "Fixed background memory system limits."
+  ]
+}
