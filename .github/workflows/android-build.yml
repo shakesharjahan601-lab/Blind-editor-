@@ -1,0 +1,44 @@
+name: Build Android APK
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK Environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Native App CLI Dependencies
+        run: |
+          npm install
+          npm install @capacitor/cli @capacitor/android
+
+      - name: Initialize Native App Project Matrix
+        run: |
+          npx cap init "Editor Pro" "com.editorpro.app" --web-dir=.
+          npx cap add android
+
+      - name: Compile and Bundle Native Android Assets
+        run: |
+          npx cap sync android
+          cd android && ./gradlew assembleDebug
+
+      - name: Upload Finished APK Download Link
+        uses: actions/upload-artifact@v4
+        with:
+          name: Editor-Pro-Testing-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
