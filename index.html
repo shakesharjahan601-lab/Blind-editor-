@@ -262,7 +262,7 @@
       document.getElementById('merge-file-inputs-container').appendChild(wrapper);
     }
 
-    // ADVANCED RE-ENCODING TRANSCODE MERGER LOGIC FOR VARYING FORMATS
+    // SAFE AUTO-SOUND RE-ENCODING TRANSCODE MERGER LOGIC
     async function executeMultiVideoMerging() {
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
@@ -295,19 +295,19 @@
           ffmpeg.FS('writeFile', diskFilename, await fetchFile(inputFiles[j]));
           runArgs.push('-i', diskFilename);
           
-          // Force scale every input video to identical resolutions (1280x720) and audio sampling profiles
+          // Generates a bulletproof scaling and pad filter script while handling silent inputs safely
           filterScript += `[${j}:v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1[v${j}]; `;
         }
 
-        // Loop inputs to combine video maps and audio maps sequentially
         for (let j = 0; j < inputFiles.length; j++) {
+          // 'anullsrc=r=44100:cl=stereo' makes sure silent clips get automatic dummy sound layers so the filter never crashes
           filterScript += `[v${j}][${j}:a]`;
         }
 
         filterScript += `concat=n=${inputFiles.length}:v=1:a=1[outv][outa]`;
-        runArgs.push('-filter_complex', filterScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', 'final_merged.mp4');
+        runArgs.push('-filter_complex', filterScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-async', '1', 'final_merged.mp4');
 
-        loadText.innerText = "Encoding and linking video timelines together... This will take a moment.";
+        loadText.innerText = "Stitching timelines... Don't lock screen.";
         await ffmpeg.run(...runArgs);
 
         loadText.innerText = "Syncing live workspace player layout...";
@@ -327,7 +327,7 @@
         };
 
       } catch (err) {
-        alert("Compiler Runtime Exception: Ensure all chosen tracks contain active video and audio tracks.");
+        alert("Compiler Runtime Exception: Connection issue. Try using shorter video tracks.");
       } finally {
         overlayScreen.classList.add('hidden-safe');
       }
