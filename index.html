@@ -10,7 +10,18 @@
   
   <link rel="manifest" href="manifest.json">
   
-  <script src="mini-coi.js" scope="./"></script>
+  <script>
+    const currentPathname = window.location.pathname;
+    const projectSubfolderScope = currentPathname.substring(0, currentPathname.lastIndexOf('/') + 1);
+    
+    if (typeof window !== 'undefined' && !window.crossOriginIsolated && window.location.protocol === 'https:') {
+      // Dynamically load the security script relative to your exact GitHub folder scope
+      const scriptNode = document.createElement('script');
+      scriptNode.src = 'mini-coi.js';
+      scriptNode.setAttribute('scope', projectSubfolderScope);
+      document.head.appendChild(scriptNode);
+    }
+  </script>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
@@ -191,12 +202,6 @@
     const ffmpeg = createFFmpeg({ log: true });
     const studioVideoPlayer = document.getElementById('studio-video-player');
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', function() {
-        document.getElementById('update-notification-toast').classList.remove('hidden-safe');
-      });
-    }
-
     function openPanel(panelId) {
       document.getElementById('welcome-screen').classList.add('hidden-safe');
       document.getElementById('tool-workspace').classList.add('hidden-safe');
@@ -258,7 +263,6 @@
       document.getElementById('merge-file-inputs-container').appendChild(wrapper);
     }
 
-    // 100-STEPS-AHEAD STREAM DEMUX ENGINE FOR BULLETPROOF COMPILATIONS
     async function executeMultiVideoMerging() {
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
@@ -288,33 +292,23 @@
         for (let j = 0; j < inputFiles.length; j++) {
           const diskFilename = `track_${j}.mp4`;
           ffmpeg.FS('writeFile', diskFilename, await fetchFile(inputFiles[j]));
-          
-          // Write directly to a Demux List text file to prevent heavy processing crashes
           manifestContent += `file '${diskFilename}'\n`;
         }
 
         ffmpeg.FS('writeFile', 'playlist.txt', new TextEncoder().encode(manifestContent));
-
         loadText.innerText = "Stitching track channels... Please stand by.";
         
-        // Employs lightning fast stream copy pass filters directly on the device memory
         await ffmpeg.run('-f', 'concat', '-safe', '0', '-i', 'playlist.txt', '-c', 'copy', 'final_merged.mp4');
-
         loadText.innerText = "Injecting live workspace player track...";
-        const finalBuffer = ffmpeg.FS('readFile', 'final_merged.mp4');
         
-        // Convert to live blob URL object pointer hook
+        const finalBuffer = ffmpeg.FS('readFile', 'final_merged.mp4');
         const clipBlob = new Blob([finalBuffer.buffer], { type: 'video/mp4' });
         compiledOutputBlobUrl = URL.createObjectURL(clipBlob);
 
-        // Load into preview player
         const previewEl = document.getElementById('merge-studio-preview-player');
         previewEl.src = compiledOutputBlobUrl;
-
-        // Unhide save options layout interface block
         document.getElementById('merge-preview-container').classList.remove('hidden-safe');
 
-        // Configure layout anchor action route hook
         document.getElementById('merge-download-btn').onclick = function() {
           const dlNode = document.createElement('a');
           dlNode.href = compiledOutputBlobUrl;
@@ -323,8 +317,8 @@
         };
 
       } catch (err) {
-        alert("Compiler Runtime Exception: Engine out of hardware memory limits. Try using smaller video tracks.");
-      } finally {
+        alert("Compiler Runtime Exception: Connection broken. Ensure all source files share matching encoding specs.");
+      } {
         overlayScreen.classList.add('hidden-safe');
       }
     }
