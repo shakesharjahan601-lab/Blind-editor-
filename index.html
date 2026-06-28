@@ -262,7 +262,7 @@
       document.getElementById('merge-file-inputs-container').appendChild(wrapper);
     }
 
-    // SAFE AUTO-SOUND RE-ENCODING TRANSCODE MERGER LOGIC
+    // LOW-MEMORY TRANSCODE MERGING LOGIC
     async function executeMultiVideoMerging() {
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
@@ -286,7 +286,7 @@
           return;
         }
 
-        loadText.innerText = "Mounting media layers to sandbox...";
+        loadText.innerText = "Mounting tracks...";
         let filterScript = "";
         let runArgs = [];
 
@@ -295,22 +295,35 @@
           ffmpeg.FS('writeFile', diskFilename, await fetchFile(inputFiles[j]));
           runArgs.push('-i', diskFilename);
           
-          // Generates a bulletproof scaling and pad filter script while handling silent inputs safely
-          filterScript += `[${j}:v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1[v${j}]; `;
+          // Downscale slightly to 854x480 to keep mobile hardware memory usage extremely low
+          filterScript += `[j]scale=854:480,setsar=1[v${j}]; `;
+          // Swapped out complex nested maps for simple layout mappings
+          runArgs.push('-map', `[v${j}]`);
         }
 
+        let concatTracks = "";
         for (let j = 0; j < inputFiles.length; j++) {
-          // 'anullsrc=r=44100:cl=stereo' makes sure silent clips get automatic dummy sound layers so the filter never crashes
-          filterScript += `[v${j}][${j}:a]`;
+          concatTracks += `[v${j}][${j}:a]`;
         }
 
-        filterScript += `concat=n=${inputFiles.length}:v=1:a=1[outv][outa]`;
-        runArgs.push('-filter_complex', filterScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-async', '1', 'final_merged.mp4');
+        filterScript = filterScript.replace(/j/g, function() {
+          let count = 0;
+          return function(match) {
+            return count++;
+          };
+        }());
+
+        // Explicitly forces variable frame drops to keep audio-video synced over long 9 minute files
+        filterScript += `${concatTracks}concat=n=${inputFiles.length}:v=1:a=1[outv][outa]`;
+        runArgs = runArgs.filter(arg => arg !== '-map');
+        runArgs = runArgs.filter(arg => !arg.toString().includes('[v'));
+
+        runArgs.push('-filter_complex', filterScript, '-map', '[outv]', '-map', '[outa]', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '32', '-vsync', '2', 'final_merged.mp4');
 
         loadText.innerText = "Stitching timelines... Don't lock screen.";
         await ffmpeg.run(...runArgs);
 
-        loadText.innerText = "Syncing live workspace player layout...";
+        loadText.innerText = "Syncing layout view...";
         const finalBuffer = ffmpeg.FS('readFile', 'final_merged.mp4');
         const clipBlob = new Blob([finalBuffer.buffer], { type: 'video/mp4' });
         compiledOutputBlobUrl = URL.createObjectURL(clipBlob);
@@ -327,7 +340,7 @@
         };
 
       } catch (err) {
-        alert("Compiler Runtime Exception: Connection issue. Try using shorter video tracks.");
+        alert("Compiler Runtime Exception: Phone browser ran out of memory. Try using shorter files.");
       } finally {
         overlayScreen.classList.add('hidden-safe');
       }
