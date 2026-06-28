@@ -4,7 +4,6 @@ on:
     branches:
       - main
 
-# This line automatically bypasses the GitHub web settings lock for screen readers
 permissions:
   contents: write
 
@@ -26,6 +25,12 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Organize Web Assets Folder
+        run: |
+          mkdir -p www
+          cp index.html www/
+          cp version.json www/ || true
+
       - name: Install Native App CLI Dependencies
         run: |
           npm install
@@ -33,7 +38,7 @@ jobs:
 
       - name: Initialize Native App Project Matrix
         run: |
-          npx cap init "Editor Pro" "com.editorpro.app" --web-dir=.
+          npx cap init "Editor Pro" "com.editorpro.app" --web-dir=www
           npx cap add android
 
       - name: Compile and Bundle Native Android Assets
