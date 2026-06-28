@@ -1,0 +1,6 @@
+{
+  "appId": "com.editorpro.app",
+  "appName": "Editor Pro",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
