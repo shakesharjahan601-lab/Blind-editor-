@@ -8,20 +8,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-  <link rel="manifest" href="manifest.json">
-  
-  <script>
-    const currentPathname = window.location.pathname;
-    const projectSubfolderScope = currentPathname.substring(0, currentPathname.lastIndexOf('/') + 1);
-    
-    if (typeof window !== 'undefined' && !window.crossOriginIsolated && window.location.protocol === 'https:') {
-      const scriptNode = document.createElement('script');
-      scriptNode.src = 'mini-coi.js';
-      scriptNode.setAttribute('scope', projectSubfolderScope);
-      document.head.appendChild(scriptNode);
-    }
-  </script>
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
   
@@ -43,21 +29,46 @@
 </head>
 <body class="w-full h-screen flex flex-col items-center p-4 selection:bg-transparent">
 
-  <div id="update-notification-toast" class="hidden-safe fixed top-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-xl shadow-2xl z-50 flex flex-col gap-2 border border-blue-400 animate-bounce">
-    <div class="flex items-center gap-2">
-      <span>🚀</span>
-      <p class="text-xs font-bold">A fresh studio update is ready for your phone!</p>
+  <div id="update-popup-overlay" class="hidden-safe fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-5">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl text-xl">🚀</div>
+        <div>
+          <h3 class="font-black text-lg text-white">Studio Update Ready</h3>
+          <p class="text-xs text-slate-400">A fresh build version is available.</p>
+        </div>
+      </div>
+      
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs max-h-32 overflow-y-auto space-y-1.5">
+        <p class="font-bold text-blue-400 uppercase tracking-wide text-[10px]">What's New inside this build:</p>
+        <ul id="update-changelog-list" class="list-disc list-inside text-slate-300 space-y-1">
+          </ul>
+      </div>
+
+      <div id="update-progress-frame" class="hidden-safe space-y-2">
+        <div class="flex justify-between text-xs font-bold">
+          <span class="text-yellow-400">Downloading Native Packages...</span>
+          <span id="update-progress-percentage" class="text-white">0%</span>
+        </div>
+        <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
+          <div id="update-progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-0 transition-all duration-150"></div>
+        </div>
+      </div>
+
+      <div id="update-action-buttons" class="grid grid-cols-2 gap-3">
+        <button onclick="dismissUpdateOverlay()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 py-3 rounded-xl font-bold text-xs text-center border border-slate-700">Later</button>
+        <button onclick="startAppBinaryDownload()" class="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-xs text-center shadow-lg">Update Now</button>
+      </div>
     </div>
-    <button onclick="window.location.reload(true)" class="w-full bg-white text-blue-600 font-bold py-1.5 text-xs rounded-lg shadow">Tap to Sync & Update Instantly</button>
   </div>
 
   <div id="main-app-container" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
     
     <header id="master-navigation-header" class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700 shrink-0">
-      <button onclick="openPanel('video-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Video Tools</button>
-      <button onclick="openPanel('audio-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Audio Tools</button>
-      <button onclick="openPanel('help-panel')" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Help Center</button>
-      <button onclick="openSettingsLayout()" class="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl font-bold text-sm text-center">Studio Settings</button>
+      <button onclick="openPanel('video-panel')" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Video Tools</button>
+      <button onclick="openPanel('audio-panel')" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Audio Tools</button>
+      <button onclick="openPanel('help-panel')" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Help Center</button>
+      <button onclick="openSettingsLayout()" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Studio Settings</button>
     </header>
 
     <main class="p-5 flex-1 overflow-y-auto flex flex-col justify-between">
@@ -65,7 +76,7 @@
       <div class="flex-1">
         <div id="welcome-screen" class="text-center py-12 space-y-2">
           <h1 class="text-2xl font-black text-blue-500 tracking-wide">EDITOR PRO</h1>
-          <p class="text-xs text-slate-400">Select a category above to load the local hardware studio tools.</p>
+          <p class="text-xs text-slate-400">Native Studio Engine for YouTubers.</p>
         </div>
 
         <div id="video-panel" class="hidden-safe space-y-3">
@@ -81,11 +92,10 @@
         </div>
 
         <div id="help-panel" class="hidden-safe space-y-4">
-          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Manuals Directory</h2>
-          <div class="p-4 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
-            <p class="font-bold text-white">How to Merge Videos:</p>
-            <p>1. Tap 'Add Clip' to select files in order.</p>
-            <p>2. Hit stitch. Play the preview track directly inside the player to check your video before exporting!</p>
+          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Center</h2>
+          <div class="p-4 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-300">
+            <p class="font-bold text-white">Native Processing Mode:</p>
+            <p>This application processes raw media streams directly via your Android device storage chips.</p>
           </div>
         </div>
 
@@ -95,13 +105,13 @@
           
           <div id="generic-placeholder" class="hidden-safe p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
             <p class="text-yellow-500 font-bold mb-1">⚠️ Status Alert</p>
-            <p>Feature layout loading hook missing.</p>
+            <p>Feature layout hook missing.</p>
           </div>
 
           <div id="trim-active-workspace" class="hidden-safe space-y-4">
             <div>
               <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Choose Target Video</label>
-              <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+              <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white">
             </div>
 
             <div id="player-container" class="hidden-safe bg-black rounded-xl overflow-hidden border border-slate-800">
@@ -111,9 +121,9 @@
                 <span id="reader-total-duration" class="text-slate-400">Total Length: 0s</span>
               </div>
               <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2 justify-center">
-                <button onclick="skipPlaybackSeconds(-10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏪ Back 10s</button>
+                <button onclick="skipPlaybackSeconds(-10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg text-slate-300">⏪ Back 10s</button>
                 <button onclick="toggleStudioPlayback()" id="btn-play-toggle" class="flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white">⏯️ Play / Pause</button>
-                <button onclick="skipPlaybackSeconds(10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg border border-slate-700 text-slate-300">⏩ Forward 10s</button>
+                <button onclick="skipPlaybackSeconds(10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg text-slate-300">⏩ Forward 10s</button>
               </div>
             </div>
 
@@ -137,22 +147,22 @@
           </div>
 
           <div id="merge-active-workspace" class="hidden-safe space-y-4">
-            <p class="text-xs text-slate-400">Add video tracks in chronological sequence order. Works for massive 1h+ videos.</p>
+            <p class="text-xs text-slate-400">Add video tracks in chronological sequence order.</p>
             <div id="merge-file-inputs-container" class="space-y-2"></div>
             
-            <button onclick="addMergeInputSlot()" class="w-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold">
+            <button onclick="addMergeInputSlot()" class="w-full bg-slate-800 border border-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold">
               ➕ Add Another Video Clip
             </button>
             
-            <button onclick="executeMultiVideoMerging()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg">
+            <button onclick="executeMultiVideoMerging()" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg">
               Stitch All Clips End-To-End
             </button>
 
             <div id="merge-preview-container" class="hidden-safe bg-slate-950 rounded-xl p-3 border border-slate-800 space-y-3">
-              <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider">🌟 Compilation Preview Screen Loaded</p>
+              <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider">🌟 Preview Ready</p>
               <video id="merge-studio-preview-player" class="w-full rounded-lg max-h-48 bg-black" controls playsinline></video>
-              <button id="merge-download-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs">
-                📥 Everything Looks Good, Save to Gallery
+              <button id="merge-download-btn" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs">
+                📥 Save to Device Gallery
               </button>
             </div>
           </div>
@@ -160,9 +170,9 @@
           <div id="v2a-active-workspace" class="hidden-safe space-y-4">
             <div>
               <label for="v2a-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Choose Source Video</label>
-              <input type="file" id="v2a-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+              <input type="file" id="v2a-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white">
             </div>
-            <button onclick="executeAudioExtraction()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg">
+            <button onclick="executeAudioExtraction()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg">
               Extract Soundtrack & Save MP3
             </button>
           </div>
@@ -171,27 +181,37 @@
       </div>
     </main>
 
-    <div id="loading-overlay" class="p-6 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0" role="status" aria-live="assertive">
+    <div id="loading-overlay" class="p-6 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0">
       <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
-      <p id="loading-text" class="text-xs font-bold text-yellow-400 tracking-wide uppercase">Processing Studio Elements...</p>
-      <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3 max-w-xs mx-auto border border-slate-700">
-        <div id="loading-progress-bar" class="bg-blue-500 h-full w-0 transition-all duration-150"></div>
-      </div>
+      <p id="loading-text" class="text-xs font-bold text-yellow-400 tracking-wide uppercase">Processing Elements...</p>
     </div>
   </div>
 
   <div id="settings-layout" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 hidden-safe overflow-y-auto">
-    <h2 class="text-xl font-black text-white">Studio Configurations Only</h2>
-    <div>
-      <label for="set-video-format" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Default Video Extension</label>
-      <select id="set-video-format" class="w-full p-3 bg-slate-800 text-sm rounded-xl text-white border border-slate-700 focus:outline-none">
-        <option value="mp4">MP4 Container (Standard)</option>
-      </select>
+    <h2 class="text-xl font-black text-white">Studio Configurations</h2>
+    
+    <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-sm font-bold text-white">App Build Control</p>
+          <p id="app-version-string" class="text-xs text-slate-500">Current version: 1.0.0</p>
+        </div>
+        <span class="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded text-[10px] uppercase">Stable</span>
+      </div>
+      <button onclick="checkForUpdatesEngine(true)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-lg shadow">🔄 Check For Updates</button>
     </div>
+
     <button onclick="closeSettingsLayout()" class="w-full bg-slate-800 text-red-400 font-bold py-3 rounded-xl border border-slate-700 mt-4 block">Exit Studio Settings</button>
   </div>
 
   <script>
+    // System Build Configurations
+    const APP_CURRENT_VERSION = "1.0.0";
+    const GITHUB_USERNAME = "shakesharjahan601-lab";
+    const GITHUB_REPO = "Blind-editor-";
+    const MANIFEST_UPDATE_URL = `https://raw.githubusercontent/${GITHUB_USERNAME}/${GITHUB_REPO}/main/version.json`;
+
+    let cachedApkDownloadUrl = "";
     let cutStartTime = null; let cutEndTime = null;
     let internalCutListMemory = []; let activeUploadedFileBlob = null;
     let totalComputedDurationSeconds = 0; let mergeSlotCount = 0;
@@ -200,6 +220,111 @@
     const { createFFmpeg, fetchFile } = FFmpeg;
     const ffmpeg = createFFmpeg({ log: true });
     const studioVideoPlayer = document.getElementById('studio-video-player');
+
+    // Wakes up update system matrix instantly upon application boot
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('app-version-string').innerText = `Current version: ${APP_CURRENT_VERSION}`;
+      setTimeout(() => { checkForUpdatesEngine(false); }, 1500);
+      setupLocalBackgroundNotifications();
+    });
+
+    // MASTER ENGINE: VERSION CONTROLLER & PARSER
+    async function checkForUpdatesEngine(isManualTrigger) {
+      try {
+        const response = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${new Date().getTime()}`);
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        if (data.version !== APP_CURRENT_VERSION) {
+          cachedApkDownloadUrl = data.apkUrl;
+          
+          // Render tracking lines into clear text nodes
+          const changelogContainer = document.getElementById('update-changelog-list');
+          changelogContainer.innerHTML = "";
+          data.changelog.forEach(item => {
+            const li = document.createElement('li');
+            li.innerText = item;
+            changelogContainer.appendChild(li);
+          });
+
+          document.getElementById('update-popup-overlay').classList.remove('hidden-safe');
+        } else {
+          if (isManualTrigger) alert("Your studio is completely up to date!");
+        }
+      } catch (err) {
+        if (isManualTrigger) alert("Unable to sync database nodes right now.");
+      }
+    }
+
+    // 1-100% ADVANCED DOWNLOAD PIPELINE
+    function startAppBinaryDownload() {
+      if (!cachedApkDownloadUrl) return;
+      
+      document.getElementById('update-action-buttons').classList.add('hidden-safe');
+      document.getElementById('update-progress-frame').classList.remove('hidden-safe');
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', cachedApkDownloadUrl, true);
+      xhr.responseType = 'blob';
+
+      xhr.onprogress = function(e) {
+        if (e.lengthComputable) {
+          const percentage = Math.floor((e.loaded / e.total) * 100);
+          document.getElementById('update-progress-bar').style.width = `${percentage}%`;
+          document.getElementById('update-progress-percentage').innerText = `${percentage}%`;
+        }
+      };
+
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          document.getElementById('update-progress-percentage').innerText = "100% - Ready!";
+          const blob = xhr.response;
+          const downloadLink = document.createElement('a');
+          downloadLink.href = URL.createObjectURL(blob);
+          downloadLink.download = "Editor_Pro_Update.apk";
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          
+          setTimeout(() => { dismissUpdateOverlay(); }, 1000);
+        }
+      };
+
+      xhr.onerror = function() {
+        alert("Download broken midway due to device connection fluctuations.");
+        dismissUpdateOverlay();
+      };
+
+      xhr.send();
+    }
+
+    function dismissUpdateOverlay() {
+      document.getElementById('update-popup-overlay').classList.add('hidden-safe');
+      document.getElementById('update-action-buttons').classList.remove('hidden-safe');
+      document.getElementById('update-progress-frame').classList.add('hidden-safe');
+      document.getElementById('update-progress-bar').style.width = '0%';
+    }
+
+    // BACKGROUND SILENT SYSTEM NOTIFICATIONS LOOKUP
+    function setupLocalBackgroundNotifications() {
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+      
+      // Periodically trigger a local check simulation to send notifications
+      setInterval(async () => {
+        try {
+          const res = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${new Date().getTime()}`);
+          const data = await res.json();
+          if (data.version !== APP_CURRENT_VERSION && Notification.permission === 'granted') {
+            new Notification("Editor Pro New Update Available", {
+              body: "Tap to upgrade your studio and access optimized features instantly.",
+              icon: "icon.png"
+            });
+          }
+        } catch(e){}
+      }, 86400000); // Wakes up automatically every 24 hours
+    }
 
     function openPanel(panelId) {
       document.getElementById('welcome-screen').classList.add('hidden-safe');
@@ -262,11 +387,10 @@
       document.getElementById('merge-file-inputs-container').appendChild(wrapper);
     }
 
-    // MULTI-STAGE STEP-PASS PIPELINE ENGINE (Bypasses dimensions faults on 1h+ clips)
     async function executeMultiVideoMerging() {
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
-      loadText.innerText = "Initializing Multi-Timeline Vector...";
+      loadText.innerText = "Accessing device file systems...";
       overlayScreen.classList.remove('hidden-safe');
 
       try {
@@ -281,37 +405,23 @@
         }
 
         if (inputFiles.length < 2) {
-          alert("Selection Missing: Load at least two clips to trigger stitching.");
+          alert("Selection Missing: Load at least two clips.");
           overlayScreen.classList.add('hidden-safe');
           return;
         }
 
         let manifestContent = "";
-        
-        // LOOP STEP 1: Process each video track individually to normalize formats without killing RAM
         for (let j = 0; j < inputFiles.length; j++) {
-          loadText.innerText = `Normalizing asset structure ${j + 1} of ${inputFiles.length}...`;
-          
-          const rawInputName = `raw_${j}.mp4`;
-          const cleanOutputName = `clean_${j}.mp4`;
-          
-          ffmpeg.FS('writeFile', rawInputName, await fetchFile(inputFiles[j]));
-          
-          // Force layout matching parameters instantly using a quick hardware filter sweep
-          await ffmpeg.run('-i', rawInputName, '-vf', 'scale=854:480:force_original_aspect_ratio=decrease,pad=854:480:(ow-iw)/2:(oh-ih)/2,setsar=1', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '32', '-an', cleanOutputName);
-          
-          // Clear raw source from device memory sandbox to keep channels open
-          try { ffmpeg.FS('unlink', rawInputName); } catch(e){}
-          
-          manifestContent += `file '${cleanOutputName}'\n`;
+          const diskFilename = `track_${j}.mp4`;
+          ffmpeg.FS('writeFile', diskFilename, await fetchFile(inputFiles[j]));
+          manifestContent += `file '${diskFilename}'\n`;
         }
 
-        // LOOP STEP 2: Bind the perfectly scaled outputs cleanly using direct stream mapping
-        loadText.innerText = "Stitching unified channels together...";
         ffmpeg.FS('writeFile', 'playlist.txt', new TextEncoder().encode(manifestContent));
+        loadText.innerText = "Stitching timeline chunks... Please wait.";
         
         await ffmpeg.run('-f', 'concat', '-safe', '0', '-i', 'playlist.txt', '-c', 'copy', 'final_merged.mp4');
-        loadText.innerText = "Syncing live player preview panel...";
+        loadText.innerText = "Loading Studio Player Preview...";
         
         const finalBuffer = ffmpeg.FS('readFile', 'final_merged.mp4');
         const clipBlob = new Blob([finalBuffer.buffer], { type: 'video/mp4' });
@@ -328,14 +438,8 @@
           dlNode.click();
         };
 
-        // Cleanup temporary files
-        for (let j = 0; j < inputFiles.length; j++) {
-          try { ffmpeg.FS('unlink', `clean_${j}.mp4`); } catch(e){}
-        }
-        try { ffmpeg.FS('unlink', 'playlist.txt'); } catch(e){}
-
       } catch (err) {
-        alert("Compiler Runtime Exception: Process aborted due to file system limits.");
+        alert("Native Studio Exception: Ensure video frame aspects match.");
       } finally {
         overlayScreen.classList.add('hidden-safe');
       }
@@ -346,20 +450,18 @@
       if (!sourceInput) return;
       const overlayScreen = document.getElementById('loading-overlay');
       const loadText = document.getElementById('loading-text');
-      loadText.innerText = "Waking core framework...";
+      loadText.innerText = "Stripping media layers...";
       overlayScreen.classList.remove('hidden-safe');
       try {
         if (!ffmpeg.isLoaded()) await ffmpeg.load();
-        loadText.innerText = "Stripping visual array layers...";
         ffmpeg.FS('writeFile', 'video_src.mp4', await fetchFile(sourceInput));
         await ffmpeg.run('-i', 'video_src.mp4', '-vn', '-acodec', 'libmp3lame', '-q:a', '2', 'extracted_audio.mp3');
-        loadText.innerText = "Saving audio tracks...";
         const data = ffmpeg.FS('readFile', 'extracted_audio.mp3');
         const trigger = document.createElement('a');
         trigger.href = URL.createObjectURL(new Blob([data.buffer], { type: 'audio/mp3' }));
         trigger.download = "extracted_audio.mp3"; trigger.click();
         goBackToMenu();
-      } catch (err) { alert("Compiler Runtime Exception: " + err.message); } finally { overlayScreen.classList.add('hidden-safe'); }
+      } catch (err) { alert("Native Studio Exception: " + err.message); } finally { overlayScreen.classList.add('hidden-safe'); }
     }
 
     document.getElementById('trim-file-picker').addEventListener('change', function(e) {
@@ -425,7 +527,7 @@
         const data = ffmpeg.FS('readFile', 'output.mp4');
         const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' })); a.download = "output.mp4"; a.click();
         resetTrimInterfaceState(); goBackToMenu();
-      } catch (err) { alert("Compiler Runtime Exception: " + err.message); } finally { overlayScreen.classList.add('hidden-safe'); }
+      } catch (err) { alert("Native Studio Exception: " + err.message); } finally { overlayScreen.classList.add('hidden-safe'); }
     }
   </script>
 </body>
