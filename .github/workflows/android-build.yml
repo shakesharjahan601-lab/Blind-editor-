@@ -38,12 +38,11 @@ jobs:
 
       - name: Initialize Native App Project Matrix
         run: |
-          npx cap init "Editor Pro" "com.editorpro.app" --web-dir=www
+          npx cap init "Editor Pro" "com.shakesharjahan601.app" --web-dir=www
           npx cap add android
 
       - name: Force Android 15 & 16 Compatibility (API 36)
         run: |
-          # The directory is fully created by 'cap add' above, so these will run perfectly now
           if [ -f android/variables.gradle ]; then
             sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
             sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/g' android/variables.gradle
@@ -55,7 +54,7 @@ jobs:
       - name: Compile and Bundle Native Android Assets
         run: |
           npx cap sync android
-          cd android && ./gradlew assembleDebug
+          cd android && ./gradlew assembleDebug --no-daemon
 
       - name: Generate Direct Mobile Download Link
         run: |
