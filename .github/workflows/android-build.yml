@@ -47,6 +47,9 @@ jobs:
             sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
             sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/g' android/variables.gradle
           fi
+          # Create android directory if missing and suppress SDK warning block
+          mkdir -p android
+          echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
 
       - name: Compile and Bundle Native Android Assets
         run: |
