@@ -41,15 +41,21 @@ jobs:
           npx cap init "Editor Pro" "com.shakesharjahan.editor" --web-dir=www
           npx cap add android
 
+      - name: Generate Missing Launcher Resources
+        run: |
+          # Create default launcher graphic resource directories to satisfy resource linker
+          mkdir -p android/app/src/main/res/mipmap-mdpi
+          mkdir -p android/app/src/main/res/values
+          
+          # Inject basic fallback XML strings
+          echo '<resources><string name="app_name">Editor Pro</string><string name="title_activity_main">MainActivity</string></resources>' > android/app/src/main/res/values/strings.xml
+
       - name: Fix Resource Linking and Force Android 15 & 16 Compatibility
         run: |
-          # Inject target SDK settings cleanly into variables gradle
           if [ -f android/variables.gradle ]; then
             sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
             sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/g' android/variables.gradle
           fi
-          
-          # Force the Gradle property bypass directly into the localized properties structure
           if [ -f android/gradle.properties ]; then
             echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
             echo "android.useAndroidX=true" >> android/gradle.properties
