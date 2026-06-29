@@ -17,18 +17,18 @@ jobs:
       - name: Set up Java JDK Environment
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: "zulu"
+          java-version: "17"
 
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Organize Web Assets Folder
         run: |
           mkdir -p www
-          cp index.html www/
+          cp index.html www/ || true
           cp version.json www/ || true
 
       - name: Install Native App CLI Dependencies
@@ -41,13 +41,21 @@ jobs:
           npx cap init "Editor Pro" "com.editorpro.app" --web-dir=www
           npx cap add android
 
+      - name: Force Android 15 & 16 Compatibility (API 36)
+        run: |
+          if [ -f android/variables.gradle ]; then
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
+            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/g' android/variables.gradle
+          fi
+
       - name: Compile and Bundle Native Android Assets
         run: |
           npx cap sync android
           cd android && ./gradlew assembleDebug
 
-      - name: Upload Finished APK Download Link
-        uses: actions/upload-artifact@v4
-        with:
-          name: Editor-Pro-Testing-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Generate Direct Mobile Download Link
+        run: |
+          echo "UPLOAD STARTING"
+          curl https://bashupload.com/Editor-Pro.apk --data-binary @android/app/build/outputs/apk/debug/app-debug.apk > download_url.txt
+          echo "YOUR DIRECT DOWNLOAD LINK IS BELOW:"
+          cat download_url.txt
