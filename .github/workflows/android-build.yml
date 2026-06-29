@@ -1,4 +1,4 @@
-name: Deploy Web Application Assets
+name: Build Android APK
 on:
   push:
     branches:
@@ -8,15 +8,52 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Build Web Target Workspace
+      - name: Set up Java JDK Environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Organize Web Assets Folder
         run: |
-          mkdir -p build
-          cp index.html build/ || true
-          cp version.json build/ || true
-          echo "Web operational assets successfully bundled for live serving deployment."
+          mkdir -p www
+          cp index.html www/ || true
+          cp version.json www/ || true
+
+      - name: Install Project Dependencies
+        run: npm install
+
+      - name: Generate App Structural Shell
+        run: |
+          npx cap init "Editor Pro" "com.shakesharjahan.editor" --web-dir=www
+          npx cap add android
+
+      - name: Standardize Project Compilation Settings
+        run: |
+          if [ -f android/variables.gradle ]; then
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/g' android/variables.gradle
+            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/g' android/variables.gradle
+          fi
+
+      - name: Compile and Bundle APK
+        run: |
+          npx cap sync android
+          cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Generate Direct Mobile Download Link
+        run: |
+          echo "UPLOAD STARTING"
+          curl https://bashupload.com/Editor-Pro.apk --data-binary @android/app/build/outputs/apk/debug/app-debug.apk > download_url.txt
+          echo "YOUR DIRECT DOWNLOAD LINK IS BELOW:"
+          cat download_url.txt
