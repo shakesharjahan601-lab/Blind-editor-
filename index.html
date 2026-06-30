@@ -1,506 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Editor Pro</title>
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
-  
-  <style>
-    html, body {
-      overflow: hidden;
-      overscroll-behavior: none;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-    }
-    body { 
-      background-color: #0f172a; 
-      color: #f8fafc; 
-      -webkit-tap-highlight-color: transparent; 
-    }
-    .hidden-safe { display: none !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Pro</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #00e5ff;
+        }
+        button {
+            background-color: #00e5ff;
+            color: #121212;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #00b2cc;
+        }
+        .update-banner {
+            display: none;
+            background-color: #333;
+            border: 2px solid #00e5ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .status {
+            margin-top: 15px;
+            color: #aaaaaa;
+            font-size: 14px;
+        }
+    </style>
 </head>
-<body class="w-full h-screen flex flex-col items-center p-4 selection:bg-transparent">
+<body>
 
-  <div id="update-popup-overlay" class="hidden-safe fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-5">
-    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-      <div class="flex items-center gap-3">
-        <div class="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl text-xl">🚀</div>
-        <div>
-          <h3 class="font-black text-lg text-white">Studio Update Ready</h3>
-          <p class="text-xs text-slate-400">A fresh build version is available.</p>
-        </div>
-      </div>
-      
-      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs max-h-32 overflow-y-auto space-y-1.5">
-        <p class="font-bold text-blue-400 uppercase tracking-wide text-[10px]">What's New inside this build:</p>
-        <ul id="update-changelog-list" class="list-disc list-inside text-slate-300 space-y-1"></ul>
-      </div>
-
-      <div id="update-progress-frame" class="hidden-safe space-y-2">
-        <div class="flex justify-between text-xs font-bold">
-          <span class="text-yellow-400">Downloading Native Packages...</span>
-          <span id="update-progress-percentage" class="text-white">0%</span>
-        </div>
-        <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
-          <div id="update-progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-0 transition-all duration-150"></div>
-        </div>
-      </div>
-
-      <div id="update-action-buttons" class="grid grid-cols-2 gap-3">
-        <button onclick="dismissUpdateOverlay()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 py-3 rounded-xl font-bold text-xs text-center border border-slate-700">Later</button>
-        <button onclick="startAppBinaryDownload()" class="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-xs text-center shadow-lg">Update Now</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="main-app-container" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
-    
-    <header id="master-navigation-header" class="bg-slate-800 p-3 grid grid-cols-2 gap-2 border-b border-slate-700 shrink-0">
-      <button onclick="openPanel('video-panel')" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Video Tools</button>
-      <button onclick="openPanel('audio-panel')" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Audio Tools</button>
-      <button onclick="openPanel('help-panel')" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Help Center</button>
-      <button onclick="openSettingsLayout()" class="bg-slate-700 text-white p-3 rounded-xl font-bold text-sm text-center">Studio Settings</button>
-    </header>
-
-    <main class="p-5 flex-1 overflow-y-auto flex flex-col justify-between">
-      <div class="flex-1">
-        <div id="welcome-screen" class="text-center py-12 space-y-2">
-          <h1 class="text-2xl font-black text-blue-500 tracking-wide">EDITOR PRO</h1>
-          <p class="text-xs text-slate-400">Native Studio Engine for YouTubers.</p>
-        </div>
-
-        <div id="video-panel" class="hidden-safe space-y-3">
-          <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Video Operations</h2>
-          <button onclick="enterToolWorkspace('Merge Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Merge Multiple Videos</button>
-          <button onclick="enterToolWorkspace('Trim Video')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Trim Video Sections</button>
-          <button onclick="enterToolWorkspace('Video to Audio')" class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 font-bold block">Video to Audio (MP3)</button>
-        </div>
-
-        <div id="audio-panel" class="hidden-safe space-y-3">
-          <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Audio Operations</h2>
-          <button class="w-full text-left bg-slate-800 p-4 rounded-xl border border-slate-700 text-slate-500 font-bold block opacity-50" disabled>Trim Audio (Soon)</button>
-        </div>
-
-        <div id="help-panel" class="hidden-safe space-y-4">
-          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Help Center</h2>
-          <div class="p-4 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-300">
-            <p class="font-bold text-white">Native Processing Mode:</p>
-            <p>This application processes raw media streams directly via your Android device storage chips.</p>
-          </div>
-        </div>
-
-        <div id="tool-workspace" class="hidden-safe space-y-4">
-          <button onclick="goBackToMenu()" class="text-sm font-bold text-blue-400 underline">← Return to Main Menu</button>
-          <h2 id="workspace-title" class="text-xl font-black text-white">Active Tool</h2>
-          
-          <div id="generic-placeholder" class="hidden-safe p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center text-slate-400 text-sm">
-            <p class="text-yellow-500 font-bold mb-1">⚠️ Status Alert</p>
-            <p>Feature layout hook missing.</p>
-          </div>
-
-          <div id="trim-active-workspace" class="hidden-safe space-y-4">
-            <div>
-              <label for="trim-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Choose Target Video</label>
-              <input type="file" id="trim-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white">
-            </div>
-
-            <div id="player-container" class="hidden-safe bg-black rounded-xl overflow-hidden border border-slate-800">
-              <video id="studio-video-player" class="w-full max-h-48 bg-black" playsinline></video>
-              <div class="p-3 bg-slate-950 text-xs flex justify-between border-t border-slate-800" aria-hidden="true">
-                <span id="reader-current-time" class="text-slate-300">Current Position: 0s</span>
-                <span id="reader-total-duration" class="text-slate-400">Total Length: 0s</span>
-              </div>
-              <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2 justify-center">
-                <button onclick="skipPlaybackSeconds(-10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg text-slate-300">⏪ Back 10s</button>
-                <button onclick="toggleStudioPlayback()" id="btn-play-toggle" class="flex-1 bg-blue-600 p-2 text-xs font-bold rounded-lg text-white">⏯️ Play</button>
-                <button onclick="skipPlaybackSeconds(10)" class="flex-1 bg-slate-800 p-2 text-xs font-bold rounded-lg text-slate-300">⏩ Forward 10s</button>
-              </div>
-            </div>
-
-            <div id="marker-controls-container" class="hidden-safe grid grid-cols-2 gap-3">
-              <button onclick="markCurrentPlaybackTime('start')" class="bg-slate-800 text-emerald-400 py-3 rounded-xl font-bold text-xs text-center">📍 Mark Cut Start</button>
-              <button onclick="markCurrentPlaybackTime('end')" class="bg-slate-800 text-red-400 py-3 rounded-xl font-bold text-xs text-center">📍 Mark Cut End</button>
-            </div>
-
-            <div id="selection-modifiers-container" class="hidden-safe grid grid-cols-2 gap-3">
-              <button onclick="clearCurrentMarkers()" class="bg-slate-950 text-slate-400 py-2.5 rounded-xl font-bold text-xs text-center">✕ Clear Markers</button>
-              <button onclick="commitMarkerToAppMemory()" class="bg-emerald-700 text-white py-2.5 rounded-xl font-bold text-xs text-center">✓ Save Cut Points</button>
-            </div>
-
-            <div id="marker-status-readout" class="hidden-safe p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs space-y-1.5" role="status" aria-live="polite">
-              <p id="txt-start-marker" class="text-emerald-400 font-semibold">Cut Begins At: Not marked yet</p>
-              <p id="txt-end-marker" class="text-red-400 font-semibold">Cut Ends At: Not marked yet</p>
-              <p id="txt-total-cuts-saved" class="text-blue-400 font-bold border-t border-slate-800 pt-1 mt-1">Ready To Extract:</p>
-            </div>
-
-            <button id="trim-process-btn" onclick="executeMultiTrimRendering()" class="hidden-safe w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-lg">Cut Sections & Save Output</button>
-          </div>
-
-          <div id="merge-active-workspace" class="hidden-safe space-y-4">
-            <p class="text-xs text-slate-400">Add video tracks in chronological sequence order.</p>
-            <div id="merge-file-inputs-container" class="space-y-2"></div>
-            
-            <button onclick="addMergeInputSlot()" class="w-full bg-slate-800 border border-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-bold">
-              ➕ Add Another Video Clip
-            </button>
-            
-            <button onclick="executeMultiVideoMerging()" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg">
-              Stitch All Clips End-To-End
-            </button>
-
-            <div id="merge-preview-container" class="hidden-safe bg-slate-950 rounded-xl p-3 border border-slate-800 space-y-3">
-              <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider">🌟 Preview Ready</p>
-              <video id="merge-studio-preview-player" class="w-full rounded-lg max-h-48 bg-black" controls playsinline></video>
-              <a id="merge-download-link-node" class="hidden-safe block text-center w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs">
-                📥 Save to Device Gallery
-              </a>
-            </div>
-          </div>
-
-          <div id="v2a-active-workspace" class="hidden-safe space-y-4">
-            <div>
-              <label for="v2a-file-picker" class="block text-xs font-bold text-slate-400 mb-2 uppercase">Choose Source Video</label>
-              <input type="file" id="v2a-file-picker" accept="video/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white">
-            </div>
-            <button onclick="executeAudioExtraction()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg">
-              Extract Soundtrack & Save MP3
-            </button>
-            <div id="audio-output-box" class="hidden-safe p-3 bg-slate-950 rounded-xl border border-slate-800 text-center">
-              <audio id="audio-preview-node" controls class="w-full mx-auto mb-2"></audio>
-              <a id="audio-download-link-node" class="block bg-blue-600 text-white py-2 text-xs font-bold rounded-lg">Download MP3 File</a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </main>
-
-    <div id="loading-overlay" class="p-6 bg-slate-950/95 border-t border-slate-800 text-center hidden-safe shrink-0">
-      <div class="animate-spin rounded-full h-8 w-8 border-2 border-slate-800 border-t-blue-500 mx-auto mb-2"></div>
-      <p id="loading-text" class="text-xs font-bold text-yellow-400 tracking-wide uppercase">Processing Elements...</p>
-    </div>
-  </div>
-
-  <div id="settings-layout" class="w-full h-full max-w-md bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-5 hidden-safe overflow-y-auto">
-    <h2 class="text-xl font-black text-white">Studio Configurations</h2>
-    <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-      <div class="flex justify-between items-center">
-        <div>
-          <p class="text-sm font-bold text-white">App Build Control</p>
-          <p id="app-version-string" class="text-xs text-slate-500">Current version: 1.0.0</p>
-        </div>
-        <span class="bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded text-[10px] uppercase">Stable</span>
-      </div>
-      <button onclick="checkForUpdatesEngine(true)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-lg shadow">🔄 Check For Updates</button>
-    </div>
-    <button onclick="closeSettingsLayout()" class="w-full bg-slate-800 text-red-400 font-bold py-3 rounded-xl border border-slate-700 mt-4 block">Exit Studio Settings</button>
-  </div>
-
-  <script>
-    const APP_CURRENT_VERSION = "1.0.0";
-    const GITHUB_USERNAME = "shakesharjahan601-lab";
-    const GITHUB_REPO = "Blind-editor-";
-    const MANIFEST_UPDATE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/version.json`;
-
-    let cachedApkDownloadUrl = "";
-    let cutStartTime = null; let cutEndTime = null;
-    let selectedVideoFileRaw = null;
-    let totalComputedDurationSeconds = 0; let mergeSlotCount = 0;
-
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    const ffmpeg = createFFmpeg({ log: true });
-    const studioVideoPlayer = document.getElementById('studio-video-player');
-
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('app-version-string').innerText = `Current version: ${APP_CURRENT_VERSION}`;
-      setTimeout(() => { checkForUpdatesEngine(false); }, 1500);
-      addMergeInputSlot(); 
-      setupLocalBackgroundNotifications();
-    });
-
-    // --- MANIFEST VERSION PARSER ---
-    async function checkForUpdatesEngine(isManualTrigger) {
-      try {
-        const response = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${new Date().getTime()}`);
-        if (!response.ok) return false;
-        const data = await response.json();
+    <div class="container">
+        <h1>Editor Pro</h1>
+        <p>Welcome to your Native Android Video Editor Workspace.</p>
         
-        if (data.version !== APP_CURRENT_VERSION) {
-          cachedApkDownloadUrl = data.apkUrl;
-          const changelogContainer = document.getElementById('update-changelog-list');
-          changelogContainer.innerHTML = "";
-          data.changelog.forEach(item => {
-            const li = document.createElement('li');
-            li.innerText = item;
-            changelogContainer.appendChild(li);
-          });
-          document.getElementById('update-popup-overlay').classList.remove('hidden-safe');
-          return true;
-        } else {
-          if (isManualTrigger) alert("Your studio is completely up to date!");
-          return false;
-        }
-      } catch (err) {
-        if (isManualTrigger) alert("Unable to sync database nodes right now.");
-        return false;
-      }
-    }
+        <button onclick="checkUpdates()">Check for Updates</button>
+        
+        <div id="updateBanner" class="update-banner">
+            <p id="updateMessage">A new update is available!</p>
+            <button onclick="downloadUpdate()">Update Now</button>
+        </div>
 
-    function startAppBinaryDownload() {
-      if (!cachedApkDownloadUrl) return;
-      document.getElementById('update-action-buttons').classList.add('hidden-safe');
-      document.getElementById('update-progress-frame').classList.remove('hidden-safe');
-      
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 20;
-        document.getElementById('update-progress-bar').style.width = `${progress}%`;
-        document.getElementById('update-progress-percentage').innerText = `${progress}%`;
-        if (progress >= 100) {
-          clearInterval(interval);
-          window.open(cachedApkDownloadUrl, '_system');
-          dismissUpdateOverlay();
-        }
-      }, 300);
-    }
+        <div id="statusMessage" class="status">App Version: 1.0.0</div>
+    </div>
 
-    function dismissUpdateOverlay() {
-      document.getElementById('update-popup-overlay').classList.add('hidden-safe');
-    }
+    <script>
+        // Current installed version of this file code
+        const CURRENT_VERSION = "1.0.0";
+        
+        // Permanent raw path to your version manifest file on GitHub
+        const MANIFEST_UPDATE_URL = "https://raw.githubusercontent.com/shakesharjahan601-lab/Blind-editor-/main/version.json";
+        
+        // Permanent download path targeting your repository release file instead of a temporary site
+        const DOWNLOAD_APK_URL = "https://github.com/shakesharjahan601-lab/Blind-editor-/releases/download/latest/app-debug.apk";
 
-    // --- LIVE BACKGROUND NOTIFICATION LOOP ---
-    function setupLocalBackgroundNotifications() {
-      if ('Notification' in window && Notification.permission !== 'granted') {
-        Notification.requestPermission();
-      }
-      
-      setInterval(async () => {
-        try {
-          const response = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${new Date().getTime()}`);
-          if (!response.ok) return;
-          const data = await response.json();
-          
-          if (data.version !== APP_CURRENT_VERSION) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification("Studio Update Available!", {
-                body: `Version ${data.version} is ready. Tap to view changes and download.`,
-                icon: "🚀"
-              });
+        async function checkUpdates() {
+            const statusDiv = document.getElementById("statusMessage");
+            const banner = document.getElementById("updateBanner");
+            statusDiv.innerText = "Checking for updates...";
+
+            try {
+                // Fetch the online version status without browser cache getting in the way
+                const response = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${Date.now()}`);
+                if (!response.ok) throw new Error("Manifest could not be reached");
+                
+                const data = await response.json();
+                
+                if (data.version !== CURRENT_VERSION) {
+                    document.getElementById("updateMessage").innerText = `New Version ${data.version} is available!`;
+                    banner.style.display = "block";
+                    statusDiv.innerText = "Update found!";
+                } else {
+                    banner.style.display = "none";
+                    statusDiv.innerText = "Your application is completely up to date.";
+                }
+            } catch (error) {
+                console.error(error);
+                statusDiv.innerText = "Failed to fetch updates. Please verify your internet connection.";
             }
-          }
-        } catch (e) {
-          console.log("Background synchronization paused.");
         }
-      }, 900000); 
-    }
 
-    // --- NAVIGATION LOGIC ---
-    function openPanel(panelId) {
-      document.getElementById('welcome-screen').classList.add('hidden-safe');
-      document.getElementById('video-panel').classList.add('hidden-safe');
-      document.getElementById('audio-panel').classList.add('hidden-safe');
-      document.getElementById('help-panel').classList.add('hidden-safe');
-      document.getElementById('tool-workspace').classList.add('hidden-safe');
-      document.getElementById('settings-layout').classList.add('hidden-safe');
-      document.getElementById('main-app-container').classList.remove('hidden-safe');
-      document.getElementById(panelId).classList.remove('hidden-safe');
-    }
-
-    // --- THE REST OF YOUR RE-RENDER OPERATIONS ---
-    function enterToolWorkspace(toolName) {
-      openPanel('tool-workspace');
-      document.getElementById('workspace-title').innerText = toolName;
-      document.getElementById('trim-active-workspace').classList.add('hidden-safe');
-      document.getElementById('merge-active-workspace').classList.add('hidden-safe');
-      document.getElementById('v2a-active-workspace').classList.add('hidden-safe');
-
-      if (toolName === 'Trim Video') {
-        document.getElementById('trim-active-workspace').classList.remove('hidden-safe');
-      } else if (toolName === 'Merge Video') {
-        document.getElementById('merge-active-workspace').classList.remove('hidden-safe');
-      } else if (toolName === 'Video to Audio') {
-        document.getElementById('v2a-active-workspace').classList.remove('hidden-safe');
-      }
-    }
-
-    function goBackToMenu() {
-      document.getElementById('tool-workspace').classList.add('hidden-safe');
-      document.getElementById('welcome-screen').classList.remove('hidden-safe');
-    }
-
-    function openSettingsLayout() {
-      document.getElementById('main-app-container').classList.add('hidden-safe');
-      document.getElementById('settings-layout').classList.remove('hidden-safe');
-    }
-
-    function closeSettingsLayout() {
-      openPanel('welcome-screen');
-    }
-
-    document.getElementById('trim-file-picker').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      selectedVideoFileRaw = file;
-      studioVideoPlayer.src = URL.createObjectURL(file);
-      
-      document.getElementById('player-container').classList.remove('hidden-safe');
-      document.getElementById('marker-controls-container').classList.remove('hidden-safe');
-      document.getElementById('selection-modifiers-container').classList.remove('hidden-safe');
-      document.getElementById('marker-status-readout').classList.remove('hidden-safe');
-      
-      studioVideoPlayer.onloadedmetadata = () => {
-        totalComputedDurationSeconds = studioVideoPlayer.duration;
-        document.getElementById('reader-total-duration').innerText = `Total Length: ${Math.floor(totalComputedDurationSeconds)}s`;
-      };
-      studioVideoPlayer.ontimeupdate = () => {
-        document.getElementById('reader-current-time').innerText = `Current Position: ${Math.floor(studioVideoPlayer.currentTime)}s`;
-      };
-    });
-
-    function toggleStudioPlayback() {
-      if (studioVideoPlayer.paused) {
-        studioVideoPlayer.play();
-        document.getElementById('btn-play-toggle').innerText = "⏯️ Pause";
-      } else {
-        studioVideoPlayer.pause();
-        document.getElementById('btn-play-toggle').innerText = "⏯️ Play";
-      }
-    }
-
-    function skipPlaybackSeconds(sec) { studioVideoPlayer.currentTime += sec; }
-
-    function markCurrentPlaybackTime(type) {
-      const currentTime = studioVideoPlayer.currentTime;
-      if (type === 'start') {
-        cutStartTime = currentTime;
-        document.getElementById('txt-start-marker').innerText = `Cut Begins At: ${Math.floor(cutStartTime)}s`;
-      } else {
-        cutEndTime = currentTime;
-        document.getElementById('txt-end-marker').innerText = `Cut Ends At: ${Math.floor(cutEndTime)}s`;
-      }
-    }
-
-    function clearCurrentMarkers() {
-      cutStartTime = null; cutEndTime = null;
-      document.getElementById('txt-start-marker').innerText = "Cut Begins At: Not marked yet";
-      document.getElementById('txt-end-marker').innerText = "Cut Ends At: Not marked yet";
-    }
-
-    function commitMarkerToAppMemory() {
-      if (cutStartTime === null || cutEndTime === null || cutStartTime >= cutEndTime) {
-        alert("Invalid cut points selected.");
-        return;
-      }
-      document.getElementById('txt-total-cuts-saved').innerText = `Ready To Extract: From ${Math.floor(cutStartTime)}s to ${Math.floor(cutEndTime)}s`;
-      document.getElementById('trim-process-btn').classList.remove('hidden-safe');
-    }
-
-    async function executeMultiTrimRendering() {
-      if (!selectedVideoFileRaw) return;
-      toggleLoader(true, "Cutting and re-rendering video timeline stream...");
-      try {
-        if (!ffmpeg.isLoaded()) await ffmpeg.load();
-        ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(selectedVideoFileRaw));
-        const duration = cutEndTime - cutStartTime;
-        await ffmpeg.run('-ss', cutStartTime.toString(), '-i', 'input.mp4', '-t', duration.toString(), '-c', 'copy', 'output.mp4');
-        const data = ffmpeg.FS('readFile', 'output.mp4');
-        saveProcessedFileBlob(data.buffer, 'trimmed-video.mp4', 'video/mp4');
-      } catch (err) {
-        alert("FFmpeg render failed.");
-      } finally { toggleLoader(false); }
-    }
-
-    function addMergeInputSlot() {
-      mergeSlotCount++;
-      const container = document.getElementById('merge-file-inputs-container');
-      const div = document.createElement('div');
-      div.className = "bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col gap-1";
-      div.innerHTML = `
-        <label class="text-[10px] font-bold text-slate-400 uppercase">Track Asset #${mergeSlotCount}</label>
-        <input type="file" accept="video/*" class="merge-video-pickers text-xs text-slate-300">
-      `;
-      container.appendChild(div);
-    }
-
-    async function executeMultiVideoMerging() {
-      const inputs = document.querySelectorAll('.merge-video-pickers');
-      const validFiles = [];
-      for (let input of inputs) { if (input.files[0]) validFiles.push(input.files[0]); }
-      if (validFiles.length < 2) { alert("Load at least 2 distinct files."); return; }
-
-      toggleLoader(true, "Stitching media assets into linear container...");
-      try {
-        if (!ffmpeg.isLoaded()) await ffmpeg.load();
-        let concatTextContent = "";
-        for (let i = 0; i < validFiles.length; i++) {
-          const filename = `input${i}.mp4`;
-          ffmpeg.FS('writeFile', filename, await fetchFile(validFiles[i]));
-          concatTextContent += `file '${filename}'\n`;
+        function downloadUpdate() {
+            // Forces the device system to open the permanent repository download path directly
+            window.open(DOWNLOAD_APK_URL, '_system');
         }
-        ffmpeg.FS('writeFile', 'concat.txt', new TextEncoder().encode(concatTextContent));
-        await ffmpeg.run('-f', 'concat', '-safe', '0', '-i', 'concat.txt', '-c', 'copy', 'merged_output.mp4');
-        
-        const data = ffmpeg.FS('readFile', 'merged_output.mp4');
-        const outputBlob = new Blob([data.buffer], { type: 'video/mp4' });
-        const outputUrl = URL.createObjectURL(outputBlob);
-        
-        document.getElementById('merge-studio-preview-player').src = outputUrl;
-        const downloadBtn = document.getElementById('merge-download-link-node');
-        downloadBtn.href = outputUrl;
-        downloadBtn.download = "stitched-youtube-master.mp4";
-        
-        document.getElementById('merge-preview-container').classList.remove('hidden-safe');
-        downloadBtn.classList.remove('hidden-safe');
-      } catch (err) { alert("Stitch timeline error."); } finally { toggleLoader(false); }
-    }
 
-    async function executeAudioExtraction() {
-      const picker = document.getElementById('v2a-file-picker');
-      const file = picker.files[0];
-      if (!file) { alert("Load a valid video asset layout track file first."); return; }
-
-      toggleLoader(true, "Demuxing core audio frequency channels...");
-      try {
-        if (!ffmpeg.isLoaded()) await ffmpeg.load();
-        ffmpeg.FS('writeFile', 'source.mp4', await fetchFile(file));
-        await ffmpeg.run('-i', 'source.mp4', '-vn', '-acodec', 'libmp3lame', 'soundtrack.mp3');
-        
-        const data = ffmpeg.FS('readFile', 'soundtrack.mp3');
-        const audioBlob = new Blob([data.buffer], { type: 'audio/mp3' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
-        document.getElementById('audio-preview-node').src = audioUrl;
-        const dlink = document.getElementById('audio-download-link-node');
-        dlink.href = audioUrl;
-        dlink.download = "extracted-podcast-audio.mp3";
-        document.getElementById('audio-output-box').classList.remove('hidden-safe');
-      } catch (err) { alert("Audio stream split error."); } finally { toggleLoader(false); }
-    }
-
-    function toggleLoader(show, textContent = "Processing...") {
-      const loader = document.getElementById('loading-overlay');
-      document.getElementById('loading-text').innerText = textContent;
-      if (show) loader.classList.remove('hidden-safe');
-      else loader.classList.add('hidden-safe');
-    }
-
-    function saveProcessedFileBlob(buffer, filename, mime) {
-      const blob = new Blob([buffer], { type: mime });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  </script>
+        // Run checking loop automatically right when the interface launches
+        window.onload = function() {
+            setTimeout(checkUpdates, 1500);
+        };
+    </script>
 </body>
 </html>
