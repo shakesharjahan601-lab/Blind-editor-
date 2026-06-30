@@ -1,4 +1,4 @@
-name: Deploy Web Application Assets
+name: Build Android APK
 on:
   push:
     branches:
@@ -8,15 +8,85 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Build Web Target Workspace
+      - name: Set up Java JDK Environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Organize Web Assets Folder
         run: |
-          mkdir -p build
-          cp index.html build/ || true
-          cp version.json build/ || true
-          echo "Web operational assets successfully bundled for live serving deployment."
+          mkdir -p www
+          cp index.html www/ || true
+          cp version.json www/ || true
+
+      - name: Install Modern Framework Core
+        run: |
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+
+      - name: Scaffold App Native Framework
+        run: |
+          npx cap init "Editor Pro" "com.shakesharjahan.editor" --web-dir=www
+          npx cap add android
+
+      - name: Inject Layout Resources and Fallbacks
+        run: |
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/res/mipmap-mdpi
+          mkdir -p android/app/src/main/res/mipmap-hdpi
+          mkdir -p android/app/src/main/res/mipmap-xhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+
+          echo '<resources><string name="app_name">Editor Pro</string><string name="title_activity_main">MainActivity</string></resources>' > android/app/src/main/res/values/strings.xml
+
+          IMG="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+
+      - name: Hardcode Target Android 16 and 17 Compatibility Configurations
+        run: |
+          if [ -f android/variables.gradle ]; then
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
+            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/g' android/variables.gradle
+          fi
+
+          if [ -f android/gradle.properties ]; then
+            echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
+            echo "android.useAndroidX=true" >> android/gradle.properties
+            echo "android.enableJetifier=true" >> android/gradle.properties
+          fi
+
+      - name: Synchronize and Execute APK Compiler Assemblies
+        run: |
+          npx cap sync android
+          cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Publish Permanently to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          tag_name: latest
+          name: "Editor Pro Production Build"
+          body: "This is the permanent cloud-compiled APK file for Editor Pro."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
