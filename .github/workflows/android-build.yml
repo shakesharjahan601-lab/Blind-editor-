@@ -31,22 +31,43 @@ jobs:
           cp index.html www/ || true
           cp version.json www/ || true
 
-      - name: Install Project Dependencies
-        run: npm install
+      - name: Install Capacitor CLI
+        run: npm install @capacitor/cli @capacitor/core @capacitor/android
 
-      - name: Generate App Structural Shell
+      - name: Scaffold Complete Native Project Framework
         run: |
           npx cap init "Editor Pro" "com.shakesharjahan.editor" --web-dir=www
           npx cap add android
 
-      - name: Standardize Project Compilation Settings
+      - name: Generate Drop-in Assets for Resource Linker
         run: |
+          # Create default launcher graphic directories so the Android compiler doesn't crash
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/res/mipmap-mdpi
+          
+          # Write required fallback layout XML configurations
+          echo '<resources><string name="app_name">Editor Pro</string><string name="title_activity_main">MainActivity</string></resources>' > android/app/src/main/res/values/strings.xml
+          
+          # Create a dummy 1x1 pixel image to act as a placeholder app icon
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+
+      - name: Force Android 15 & 16 Compatibility Settings
+        run: |
+          # Configure SDK targets cleanly inside localized files
           if [ -f android/variables.gradle ]; then
-            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/g' android/variables.gradle
-            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/g' android/variables.gradle
+            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
+            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/g' android/variables.gradle
+          fi
+          
+          # Inject the necessary Gradle bypass properties
+          if [ -f android/gradle.properties ]; then
+            echo "android.suppressUnsupportedCompileSdk=36" >> android/gradle.properties
+            echo "android.useAndroidX=true" >> android/gradle.properties
+            echo "android.enableJetifier=true" >> android/gradle.properties
           fi
 
-      - name: Compile and Bundle APK
+      - name: Synchronize and Compile Production APK
         run: |
           npx cap sync android
           cd android && ./gradlew assembleDebug --no-daemon
@@ -55,5 +76,7 @@ jobs:
         run: |
           echo "UPLOAD STARTING"
           curl https://bashupload.com/Editor-Pro.apk --data-binary @android/app/build/outputs/apk/debug/app-debug.apk > download_url.txt
-          echo "YOUR DIRECT DOWNLOAD LINK IS BELOW:"
+          echo "========================================="
+          echo "YOUR DIRECT MOBILE APK DOWNLOAD LINK IS BELOW:"
           cat download_url.txt
+          echo "========================================="
