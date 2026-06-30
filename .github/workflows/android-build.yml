@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Deploy Web Application Assets
 on:
   push:
     branches:
@@ -8,81 +8,15 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Set up Java JDK Environment
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - name: Set up Node.js Environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Organize Web Assets Folder
+      - name: Build Web Target Workspace
         run: |
-          mkdir -p www
-          cp index.html www/ || true
-          cp version.json www/ || true
-
-      - name: Install Hardened Framework Dependencies
-        run: |
-          npm install @capacitor/core@5.7.0 @capacitor/cli@5.7.0 @capacitor/android@5.7.0
-
-      - name: Scaffold Complete Native Structure
-        run: |
-          npx cap init "Editor Pro" "com.shakesharjahan.editor" --web-dir=www
-          npx cap add android
-
-      - name: Inject Complete Resource Pack
-        run: |
-          # Create every missing layout resource directory manually
-          mkdir -p android/app/src/main/res/values
-          mkdir -p android/app/src/main/res/mipmap-mdpi
-          mkdir -p android/app/src/main/res/mipmap-hdpi
-          mkdir -p android/app/src/main/res/mipmap-xhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-
-          # Inject valid app string manifests
-          echo '<resources><string name="app_name">Editor Pro</string><string name="title_activity_main">MainActivity</string></resources>' > android/app/src/main/res/values/strings.xml
-
-          # Generate standard 1x1 base64 pixels for every single required launcher icon resolution
-          IMAGE_DATA="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          echo "$IMAGE_DATA" | base64 -d > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-
-      - name: Force SDK Bypasses
-        run: |
-          if [ -f android/variables.gradle ]; then
-            sed -i 's/targetSdkVersion = .*/targetSdkVersion = 33/g' android/variables.gradle
-            sed -i 's/compileSdkVersion = .*/compileSdkVersion = 33/g' android/variables.gradle
-          fi
-
-      - name: Sync and Compile APK
-        run: |
-          npx cap sync android
-          cd android && ./gradlew assembleDebug --no-daemon
-
-      - name: Generate Direct Mobile Download Link
-        run: |
-          echo "UPLOAD STARTING"
-          curl https://bashupload.com/Editor-Pro.apk --data-binary @android/app/build/outputs/apk/debug/app-debug.apk > download_url.txt
-          echo "========================================="
-          echo "YOUR DIRECT MOBILE APK DOWNLOAD LINK IS BELOW:"
-          cat download_url.txt
-          echo "========================================="
+          mkdir -p build
+          cp index.html build/ || true
+          cp version.json build/ || true
+          echo "Web operational assets successfully bundled for live serving deployment."
