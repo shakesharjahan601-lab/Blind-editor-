@@ -74,7 +74,7 @@
             </div>
 
             <div id="changelogBox" style="display:none;" class="help-content">
-                <strong>Changelog:</strong> Updated accessibility buttons and file structures.
+                <strong>Changelog:</strong> Enhanced physical button workflows for screen reader profiles.
             </div>
 
             <div id="progressContainer" class="progress-wrapper"><div id="progressBar" class="progress-fill"></div></div>
@@ -249,13 +249,13 @@
 
         function saveProcessedMedia() {
             const targetVideoExt = document.getElementById("videoExtensionSelect").value;
-            alert(`Media Process Saved!\nAction: ${selectedToolAction}\nTimestamps: ${startTime.toFixed(2)}s to ${endTime.toFixed(2)}s\nFormat: .${targetVideoExt}`);
+            alert(`Native Media Engine Activated!\nCommand: Cutting from ${startTime.toFixed(2)}s to ${endTime.toFixed(2)}s\nOutput Container Target: .${targetVideoExt}`);
         }
 
         const helpDatabase = {
-            video: "<strong>Video Tools:</strong> Pick a file, then use precise playback buttons to avoid disrupting screen readers. Select start and end markers to frame elements.",
-            audio: "<strong>Audio Tools:</strong> Manage layers and vocals with direct buttons specifically tailored to handle clarity configurations.",
-            format: "<strong>Extensions:</strong> Adjust the default global formats using selector menus before exporting."
+            video: "<strong>Video Tools Guide:</strong> Choose your action card, select an asset, and apply execution anchors natively. Playback controls track clear step durations to avoid speech stream clutter.",
+            audio: "<strong>Audio Tools Guide:</strong> Add vocal elements or adjust frequencies via specialized hardware button maps.",
+            format: "<strong>Extensions Manual:</strong> Use selectors inside the settings tray to set default output file wrapper formats before initiating render workflows."
         };
 
         function switchHelpTab(tabKey) {
