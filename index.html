@@ -42,6 +42,18 @@
         .help-tab-btn { flex: 1; background: none; border: none; color: #888; padding: 8px; font-size: 12px; cursor: pointer; }
         .help-tab-btn.active { background: #333; color: #00e5ff; border-radius: 4px; }
         .help-content { background: #1a1a1a; padding: 12px; border-radius: 6px; font-size: 13px; color: #ccc; line-height: 1.5; min-height: 60px; }
+
+        /* Full-Screen Update Box Layout */
+        .update-box { display: none; background-color: #262626; border: 2px solid #00e5ff; padding: 20px; border-radius: 12px; margin: 15px 0 25px 0; text-align: left; }
+        .update-title { color: #00e5ff; font-weight: bold; font-size: 18px; margin-bottom: 8px; }
+        .update-desc { color: #ccc; font-size: 14px; margin-bottom: 20px; }
+        .btn-group { display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap; }
+        .btn-view { background-color: #383838; color: #fff; }
+        .btn-later { background-color: transparent; color: #aaaaaa; border: 1px solid #444; }
+        .btn-update { background-color: #00e5ff; color: #121212; }
+        .progress-wrapper { display: none; margin-top: 20px; background: #333; height: 10px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { background: #00e5ff; height: 100%; width: 0%; transition: width 0.2s linear; }
+        .progress-txt { color: #00e5ff; font-size: 12px; margin-top: 5px; text-align: right; display: none; }
     </style>
 </head>
 <body>
@@ -49,6 +61,25 @@
     <div class="container">
         <h1>Editor Pro</h1>
         <div id="studioSubtitle" class="subtitle">Select a studio module below to begin</div>
+
+        <div id="updateCard" class="update-box">
+            <div id="updateLabel" class="update-title">Update Found</div>
+            <div id="reminderLabel" style="color: #ffb300; font-size: 13px; font-weight: bold; margin-bottom: 8px; display: none;">⚠️ Reminder Active</div>
+            <div class="update-desc">A new version of the app is available for installation.</div>
+            
+            <div class="btn-group" id="btnGroup">
+                <button class="btn-view" onclick="toggleChangelog()">View Changes</button>
+                <button id="laterBtn" class="btn-later" onclick="dismissUpdateCard()">Later</button>
+                <button class="btn-update" onclick="startNativeDownload()">Update</button>
+            </div>
+
+            <div id="changelogBox" style="display:none;" class="help-content">
+                <strong>Changelog:</strong> Updated accessibility buttons and file structures.
+            </div>
+
+            <div id="progressContainer" class="progress-wrapper"><div id="progressBar" class="progress-fill"></div></div>
+            <div id="progressStatus" class="progress-txt">Downloading: 0%</div>
+        </div>
 
         <div id="hubMenuGrid" class="hub-menu-grid">
             <button class="hub-btn" onclick="openStudioHub('videoHub')"><span>🎬</span> Video Tools</button>
@@ -63,23 +94,23 @@
             </div>
 
             <div id="mediaWorkspace" class="media-box">
-                <video id="studioVideoPlayer" aria-label="Video Preview Track Player Window"></video>
+                <video id="studioVideoPlayer" aria-label="Video Preview Window"></video>
                 <div class="stamp-display">
                     <span id="startMarkerTxt">Start: 0.00s</span>
                     <span id="endMarkerTxt">End: 0.00s</span>
                 </div>
                 <div class="accessible-controls">
-                    <button class="control-btn" onclick="rewindMedia()" aria-label="Rewind video 5 seconds">⏪ Rewind</button>
-                    <button class="control-btn" id="playPauseBtn" onclick="togglePlayPause()" aria-label="Play or Pause video">▶️ Play</button>
-                    <button class="control-btn" onclick="forwardMedia()" aria-label="Fast forward video 5 seconds">⏩ Forward</button>
-                    <button class="control-btn active-mark" onclick="setMark('start')" aria-label="Set video cut opening timestamp handle">📍 Set Start</button>
-                    <button class="control-btn active-mark" onclick="setMark('end')" aria-label="Set video cut closing timestamp handle">📍 Set End</button>
-                    <button class="control-btn" onclick="clearMarkers()" aria-label="Clear active markers timestamps">🧹 Clear</button>
-                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="saveProcessedMedia()" aria-label="Export and save finalized clip">💾 Save and Export Video</button>
+                    <button class="control-btn" onclick="rewindMedia()" aria-label="Rewind 5 seconds">⏪ Rewind</button>
+                    <button class="control-btn" id="playPauseBtn" onclick="togglePlayPause()" aria-label="Play or Pause">▶️ Play</button>
+                    <button class="control-btn" onclick="forwardMedia()" aria-label="Forward 5 seconds">⏩ Forward</button>
+                    <button class="control-btn active-mark" onclick="setMark('start')" aria-label="Set Start Marker">📍 Set Start</button>
+                    <button class="control-btn active-mark" onclick="setMark('end')" aria-label="Set End Marker">📍 Set End</button>
+                    <button class="control-btn" onclick="clearMarkers()" aria-label="Clear Markers">🧹 Clear</button>
+                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="saveProcessedMedia()">💾 Save and Export Video</button>
                 </div>
             </div>
 
-            <input type="file" id="videoFileLoader" accept="video/mp4,video/mkv,video/webm" style="display: none;" onchange="loadMediaToWorkspace(event)">
+            <input type="file" id="videoFileLoader" accept="video/mp4" style="display: none;" onchange="loadMediaToWorkspace(event)">
 
             <div class="tools-grid">
                 <button class="tool-card-btn" onclick="triggerFilePicker('Trim')"><span>✂️</span>Trim Video</button>
@@ -97,12 +128,12 @@
                 <button class="btn-back" onclick="navigateBackHome()">⬅️ Back</button>
             </div>
             <div class="tools-grid">
-                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🎙️</span>Insert Audio</button>
-                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🔗</span>Merge Audio</button>
-                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🎚️</span>Trim Audio</button>
-                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🤫</span>Noise Fix</button>
-                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🎹</span>Music Overlay</button>
-                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🗜️</span>Compress Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio Clip tool chosen.')"><span>🎙️</span>Insert Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio Merge tool chosen.')"><span>🔗</span>Merge Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio Trim tool chosen.')"><span>🎚️</span>Trim Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio Noise Fix chosen.')"><span>🤫</span>Noise Fix</button>
+                <button class="tool-card-btn" onclick="alert('Audio Music tool chosen.')"><span>🎹</span>Music Overlay</button>
+                <button class="tool-card-btn" onclick="alert('Audio Compression chosen.')"><span>🗜️</span>Compress Audio</button>
             </div>
         </div>
 
@@ -115,20 +146,18 @@
             <div class="settings-group">
                 <h4 style="margin:0 0 15px 0; color:#00e5ff; font-size:15px;">Default Export Formats</h4>
                 <div class="settings-row">
-                    <label for="videoExtensionSelect" style="font-size:14px;">Video Extension:</label>
+                    <label for="videoExtensionSelect">Video Extension:</label>
                     <select id="videoExtensionSelect">
                         <option value="mp4" selected>MP4 (Default)</option>
                         <option value="mkv">MKV</option>
                         <option value="webm">WEBM</option>
-                        <option value="avi">AVI</option>
                     </select>
                 </div>
                 <div class="settings-row">
-                    <label for="audioExtensionSelect" style="font-size:14px;">Audio Extension:</label>
+                    <label for="audioExtensionSelect">Audio Extension:</label>
                     <select id="audioExtensionSelect">
                         <option value="mp3" selected>MP3 (Default)</option>
                         <option value="wav">WAV</option>
-                        <option value="aac">AAC</option>
                         <option value="m4a">M4A</option>
                     </select>
                 </div>
@@ -142,44 +171,40 @@
                     <button class="help-tab-btn" id="tabFormatHelp" onclick="switchHelpTab('format')">Extensions</button>
                 </div>
                 <div id="helpManualViewer" class="help-content">
-                    Select a tool feature type button above to learn step-by-step operating instructions.
+                    Select a manual option above to view instructions.
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        const CURRENT_VERSION = "1.0.0";
+        const MANIFEST_UPDATE_URL = "https://raw.githubusercontent.com/shakesharjahan601-lab/Blind-editor-/main/version.json";
+        const DOWNLOAD_APK_URL = "https://github.com/shakesharjahan601-lab/Blind-editor-/releases/download/latest/app-debug.apk";
+
         let startTime = 0;
         let endTime = 0;
         let selectedToolAction = "";
 
-        // Universal Navigation Hub Router System
         function openStudioHub(hubId) {
             document.getElementById("hubMenuGrid").style.display = "none";
             document.querySelectorAll('.workspace-panel').forEach(panel => panel.style.display = "none");
-            
             document.getElementById(hubId).style.display = "block";
-            document.getElementById("studioSubtitle").innerText = "Workspace active. Press Back button to return to home screen.";
-
-            // Standardize history state tracking variables to intercept system device keys
+            document.getElementById("studioSubtitle").innerText = "Workspace active.";
             history.pushState({ activePanel: hubId }, "");
         }
 
         function navigateBackHome() {
             document.querySelectorAll('.workspace-panel').forEach(panel => panel.style.display = "none");
             document.getElementById("mediaWorkspace").style.display = "none";
-            
             document.getElementById("hubMenuGrid").style.display = "grid";
             document.getElementById("studioSubtitle").innerText = "Select a studio module below to begin";
         }
 
-        // Synchronize Native Device Physical Keys and Swipe Gesture Events
         window.addEventListener('popstate', function(event) {
-            // Intercept standard phone navigation requests smoothly back to system board grid maps
             navigateBackHome();
         });
 
-        // Accessible Trim Operations Management Engine Logic
         function triggerFilePicker(actionName) {
             selectedToolAction = actionName;
             document.getElementById("videoFileLoader").click();
@@ -188,28 +213,18 @@
         function loadMediaToWorkspace(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             document.getElementById("mediaWorkspace").style.display = "block";
             const videoElement = document.getElementById("studioVideoPlayer");
             videoElement.src = URL.createObjectURL(file);
             videoElement.load();
-            
-            // Re-zero parameters out on file change events
-            startTime = 0;
-            endTime = 0;
             clearMarkers();
         }
 
         function togglePlayPause() {
             const video = document.getElementById("studioVideoPlayer");
             const btn = document.getElementById("playPauseBtn");
-            if (video.paused) {
-                video.play();
-                btn.innerText = "⏸️ Pause";
-            } else {
-                video.pause();
-                btn.innerText = "▶️ Play";
-            }
+            if (video.paused) { video.play(); btn.innerText = "⏸️ Pause"; } 
+            else { video.pause(); btn.innerText = "▶️ Play"; }
         }
 
         function rewindMedia() { document.getElementById("studioVideoPlayer").currentTime -= 5; }
@@ -227,40 +242,74 @@
         }
 
         function clearMarkers() {
-            startTime = 0;
-            endTime = 0;
+            startTime = 0; endTime = 0;
             document.getElementById("startMarkerTxt").innerText = "Start: 0.00s";
             document.getElementById("endMarkerTxt").innerText = "End: 0.00s";
         }
 
         function saveProcessedMedia() {
             const targetVideoExt = document.getElementById("videoExtensionSelect").value;
-            alert(`Media Render Engine Context Initialized!\nAction: ${selectedToolAction}\nFrom: ${startTime.toFixed(2)}s to ${endTime.toFixed(2)}s\nTarget Output Format Profile: .${targetVideoExt}`);
+            alert(`Media Process Saved!\nAction: ${selectedToolAction}\nTimestamps: ${startTime.toFixed(2)}s to ${endTime.toFixed(2)}s\nFormat: .${targetVideoExt}`);
         }
 
-        // Tabbed Dynamic Documentation Manual Content String Databases
         const helpDatabase = {
-            video: "<strong>Video Trimming Operations:</strong> Choose a file from storage. Tap Play/Pause or jump through the timeline using the Forward and Rewind buttons. Tap 'Set Start' and 'Set End' at specific intervals to target frame timestamps accurately without layout screen reading interruption constraints.",
-            audio: "<strong>Audio Sync & Overlays:</strong> Import background vocal tracks or ambient music files directly into the sound matrix. Controls use targeted step parameters ideal for navigating clear frequencies smoothly.",
-            format: "<strong>System Format Output Adjustments:</strong> Modify target video and audio file container format strings inside the settings matrix dropdown layout profile cards before hitting export profiles."
+            video: "<strong>Video Tools:</strong> Pick a file, then use precise playback buttons to avoid disrupting screen readers. Select start and end markers to frame elements.",
+            audio: "<strong>Audio Tools:</strong> Manage layers and vocals with direct buttons specifically tailored to handle clarity configurations.",
+            format: "<strong>Extensions:</strong> Adjust the default global formats using selector menus before exporting."
         };
 
         function switchHelpTab(tabKey) {
             document.getElementById("tabVideoHelp").classList.remove("active");
             document.getElementById("tabAudioHelp").classList.remove("active");
             document.getElementById("tabFormatHelp").classList.remove("active");
-
-            if (tabKey === 'video') document.getElementById("tabVideoHelp").classList.add("active");
-            if (tabKey === 'audio') document.getElementById("tabAudioHelp").classList.add("active");
-            if (tabKey === 'format') document.getElementById("tabFormatHelp").classList.add("active");
-
+            document.getElementById("tab" + tabKey.charAt(0).toUpperCase() + tabKey.slice(1) + "Help").classList.add("active");
             document.getElementById("helpManualViewer").innerHTML = helpDatabase[tabKey];
         }
 
-        // Instantiate Default Framework Text Strings on App Initial Load Engine Context State
-        window.onload = function() {
-            switchHelpTab('video');
-        };
+        async function checkUpdates() {
+            try {
+                const response = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${Date.now()}`);
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data.version !== CURRENT_VERSION) {
+                    document.getElementById("hubMenuGrid").style.display = "none";
+                    document.querySelectorAll('.workspace-panel').forEach(panel => panel.style.display = "none");
+                    document.getElementById("updateCard").style.display = "block";
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function dismissUpdateCard() {
+            document.getElementById("updateCard").style.display = "none";
+            document.getElementById("hubMenuGrid").style.display = "grid";
+        }
+
+        function toggleChangelog() {
+            const box = document.getElementById("changelogBox");
+            box.style.display = box.style.display === "block" ? "none" : "block";
+        }
+
+        function startNativeDownload() {
+            document.getElementById("btnGroup").style.display = "none";
+            document.getElementById("progressContainer").style.display = "block";
+            document.getElementById("progressStatus").style.display = "block";
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', DOWNLOAD_APK_URL, true);
+            xhr.responseType = 'blob';
+            xhr.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById("progressBar").style.width = pct + "%";
+                    document.getElementById("progressStatus").innerText = `Downloading Data: ${pct}%`;
+                }
+            };
+            xhr.onload = function() {
+                if (this.status === 200) { window.open(DOWNLOAD_APK_URL, '_system'); }
+            };
+            xhr.send();
+        }
+
+        window.onload = function() { setTimeout(checkUpdates, 500); switchHelpTab('video'); };
     </script>
 </body>
 </html>
