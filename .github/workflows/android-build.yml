@@ -31,9 +31,9 @@ jobs:
           cp index.html www/ || true
           cp version.json www/ || true
 
-      - name: Install Modern Framework Core
+      - name: Install Modern Framework & Native Downloader Plugins
         run: |
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest @capacitor/filesystem@latest
 
       - name: Scaffold App Native Framework
         run: |
@@ -53,17 +53,12 @@ jobs:
 
           IMG="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
           echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
           echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
           echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
           echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
           echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          echo "$IMG" | base64 -d > android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
-      - name: Hardcode Target Android 16 and 17 Compatibility Configurations
+      - name: Hardcode Target Android 16 Configurations
         run: |
           if [ -f android/variables.gradle ]; then
             sed -i 's/targetSdkVersion = .*/targetSdkVersion = 36/g' android/variables.gradle
@@ -76,7 +71,7 @@ jobs:
             echo "android.enableJetifier=true" >> android/gradle.properties
           fi
 
-      - name: Synchronize and Execute APK Compiler Assemblies
+      - name: Synchronize and Execute APK Compiler
         run: |
           npx cap sync android
           cd android && ./gradlew assembleDebug --no-daemon
@@ -87,7 +82,7 @@ jobs:
           files: android/app/build/outputs/apk/debug/app-debug.apk
           tag_name: latest
           name: "Editor Pro Production Build"
-          body: "This is the permanent cloud-compiled APK file for Editor Pro containing your layout tabs."
+          body: "This build contains the new native background downloader engine."
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
