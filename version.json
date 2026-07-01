@@ -1,3 +1,4 @@
 {
-  "version": "1.0.1"
+  "version": "1.0.1",
+  "changelog": "• Isolated layout panels to stop button overlap.\n• Enabled native file saving directly to the phone's Movies folder.\n• Fixed native back key to navigate menus safely instead of closing the app."
 }
