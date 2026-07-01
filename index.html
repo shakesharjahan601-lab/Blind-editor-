@@ -1,1 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Pro</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 15px; background-color: #121212; color: #ffffff; text-align: center; }
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; background-color: #1e1e1e; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        h1 { color: #00e5ff; margin-bottom: 5px; }
+        .subtitle { color: #888888; font-size: 14px; margin-bottom: 20px; }
+        .hub-menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin: 30px 0; }
+        .hub-btn { background-color: #252525; color: #00e5ff; border: 2px solid #333; padding: 25px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .hub-panel { display: none; text-align: left; }
+        .tool-workspace { display: none; background: #111; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .btn-back { background-color: #383838; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+        .tool-card-btn { background-color: #252525; color: #ffffff; border: 1px solid #333333; padding: 20px 10px; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; cursor: pointer; }
+        video { width: 100%; max-height: 220px; border-radius: 8px; background: #000; }
+        .accessible-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .control-btn { background-color: #333; color: #fff; border: 1px solid #444; padding: 12px 5px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .control-btn.active-mark { background-color: #00e5ff; color: #121212; }
+        .stamp-display { background: #222; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between; color: #aaa; }
+        .settings-group { background: #252525; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        select { background: #333; color: #fff; border: 1px solid #555; padding: 8px; border-radius: 6px; font-size: 14px; width: 120px; }
+        .help-tabs { display: flex; gap: 5px; margin-bottom: 10px; background: #111; padding: 5px; border-radius: 6px; }
+        .help-tab-btn { flex: 1; background: none; border: none; color: #888; padding: 8px; font-size: 12px; cursor: pointer; }
+        .help-tab-btn.active { background: #333; color: #00e5ff; border-radius: 4px; }
+        .help-content { background: #1a1a1a; padding: 12px; border-radius: 6px; font-size: 13px; color: #ccc; line-height: 1.5; min-height: 60px; }
+        .update-box-panel { display: none; background-color: #1e1e1e; text-align: left; padding: 10px; }
+        .update-title { color: #00e5ff; font-weight: bold; font-size: 20px; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        .update-desc { color: #ccc; font-size: 15px; margin-bottom: 25px; line-height: 1.4; }
+        .btn-group { display: flex; gap: 12px; margin-bottom: 20px; }
+        .progress-wrapper { display: none; background: #333; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 20px; }
+        .progress-fill { background: #00e5ff; height: 100%; width: 0%; transition: width 0.2s linear; }
+        .progress-txt { color: #00e5ff; font-size: 13px; margin-top: 6px; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="appMasterHeader">
+            <h1>Editor Pro</h1>
+            <div id="studioSubtitle" class="subtitle">Select a studio module below to begin</div>
+        </div>
+
+        <div id="updateScreenPanel" class="update-box-panel">
+            <div class="update-title">System Update Required</div>
+            <div class="update-desc">An optimized production build is ready for installation.</div>
+            
+            <div class="btn-group" id="updateButtonActionsTray">
+                <button class="btn-back" onclick="toggleChangelogLayout()">View Changes</button>
+                <button class="btn-back" style="background:transparent; border:1px solid #444; color:#aaa;" onclick="dismissSystemUpdatePanel()">Later</button>
+                <button class="control-btn" style="background:#00e5ff; color:#121212; padding:8px 20px;" onclick="executeNativeBackgroundDownload()">Update Now</button>
+            </div>
+
+            <div id="isolatedChangelogText" style="display:none; background:#111; padding:15px; border-radius:8px; margin-bottom:15px; font-size:14px; color:#aaa;">
+                <strong>Changelog Description:</strong><br>
+                <span id="dynamicChangelogPayload">Loading latest update details...</span>
+            </div>
+
+            <div id="updateProgressWrapper" class="progress-wrapper"><div id="updateProgressBarFill" class="progress-fill"></div></div>
+            <div id="updateProgressTextStatus" class="progress-txt" style="display:none;">Patch Download Status: 0%</div>
+        </div>
+
+        <div id="hubMenuGrid" class="hub-menu-grid">
+            <button class="hub-btn" onclick="navigateToModuleHub('videoHub')"><span>🎬</span> Video Tools Studio</button>
+            <button class="hub-btn" onclick="navigateToModuleHub('audioHub')"><span>🎵</span> Audio Tools Studio</button>
+            <button class="hub-btn" onclick="navigateToModuleHub('settingsHub')"><span>⚙️</span> Control Settings & Manual</button>
+        </div>
+
+        <div id="videoHub" class="hub-panel">
+            <div class="nav-header">
+                <h3 style="margin:0; color:#00e5ff;">Video Tools Tray</h3>
+                <button class="btn-back" onclick="navigateBackToMainHub()">⬅️ Back to Menu</button>
+            </div>
+
+            <div id="videoToolWorkspaceCard" class="tool-workspace">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <strong id="activeToolNameLabel" style="color:#00e5ff; font-size:14px;">Tool Mode Active</strong>
+                    <button class="btn-back" style="padding:4px 10px; font-size:11px; background:#444;" onclick="exitActiveToolWorkspace()">Close Tool ✖️</button>
+                </div>
+                
+                <video id="studioVideoPlayer" aria-label="Video Preview Track Window Monitor"></video>
+                <div id="hardwareStatusReporter" aria-live="polite" style="color:#00e5ff; font-size:13px; font-weight:bold; margin-top:5px; text-align:center;"></div>
+                
+                <div class="stamp-display">
+                    <span id="startMarkerTxt">Start Anchor: 0.00s</span>
+                    <span id="endMarkerTxt">End Anchor: 0.00s</span>
+                </div>
+                <div class="accessible-controls">
+                    <button class="control-btn" onclick="rewindMediaFrame()">⏪ Rewind</button>
+                    <button class="control-btn" id="playPauseBtn" onclick="togglePlayPauseState()">▶️ Play</button>
+                    <button class="control-btn" onclick="forwardMediaFrame()">⏩ Forward</button>
+                    <button class="control-btn active-mark" onclick="setTimestampAnchor('start')">📍 Set Start</button>
+                    <button class="control-btn active-mark" onclick="setTimestampAnchor('end')">📍 Set End</button>
+                    <button class="control-btn" onclick="clearTimestampAnchors()">🧹 Clear</button>
+                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save and Export Video Native</button>
+                </div>
+            </div>
+
+            <input type="file" id="videoFileLoader" accept="video/mp4" style="display: none;" onchange="loadAssetIntoWorkspace(event)">
+
+            <div id="videoToolsActionGrid" class="tools-grid">
+                <button class="tool-card-btn" onclick="activateSpecificTool('Trim Video')"><span>✂️</span>Trim Video</button>
+                <button class="tool-card-btn" onclick="activateSpecificTool('Insert Clip')"><span>➕</span>Insert Clip</button>
+                <button class="tool-card-btn" onclick="activateSpecificTool('Merge Clips')"><span>🔀</span>Merge Clips</button>
+                <button class="tool-card-btn" onclick="activateSpecificTool('To Audio')"><span>🎵</span>To Audio</button>
+                <button class="tool-card-btn" onclick="activateSpecificTool('Noise Fix')"><span>🧹</span>Noise Fix</button>
+                <button class="tool-card-btn" onclick="activateSpecificTool('Add Music')"><span>🎼</span>Add Music</button>
+            </div>
+        </div>
+
+        <div id="audioHub" class="hub-panel">
+            <div class="nav-header">
+                <h3 style="margin:0; color:#00e5ff;">Audio Tools Tray</h3>
+                <button class="btn-back" onclick="navigateBackToMainHub()">⬅️ Back to Menu</button>
+            </div>
+            <div class="tools-grid">
+                <button class="tool-card-btn" onclick="alert('Audio active.')"><span>🎙️</span>Insert Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio active.')"><span>🔗</span>Merge Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio active.')"><span>🎚️</span>Trim Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio active.')"><span>🤫</span>Noise Fix</button>
+                <button class="tool-card-btn" onclick="alert('Audio active.')"><span>🎹</span>Music Overlay</button>
+                <button class="tool-card-btn" onclick="alert('Audio active.')"><span>🗜️</span>Compress Audio</button>
+            </div>
+        </div>
+
+        <div id="settingsHub" class="hub-panel">
+            <div class="nav-header">
+                <h3 style="margin:0; color:#00e5ff;">Control Settings Hub</h3>
+                <button class="btn-back" onclick="navigateBackToMainHub()">⬅️ Back to Menu</button>
+            </div>
+            <div class="settings-group">
+                <h4 style="margin:0 0 15px 0; color:#00e5ff; font-size:15px;">Default Studio Export Containers</h4>
+                <div class="settings-row">
+                    <label for="videoExtensionSelect">Video Extension Profile:</label>
+                    <select id="videoExtensionSelect">
+                        <option value="mp4" selected>MP4 (Default)</option>
+                        <option value="mkv">MKV</option>
+                        <option value="webm">WEBM</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <label for="audioExtensionSelect">Audio Extension Profile:</label>
+                    <select id="audioExtensionSelect">
+                        <option value="mp3" selected>MP3 (Default)</option>
+                        <option value="wav">WAV</option>
+                        <option value="m4a">M4A</option>
+                    </select>
+                </div>
+            </div>
+            <div class="settings-group">
+                <h4 style="margin:0 0 10px 0; color:#00e5ff; font-size:15px;">Dynamic Structural Help Manual</h4>
+                <div class="help-tabs">
+                    <button class="help-tab-btn active" id="tabVideoHelp" onclick="executeHelpManualTabSwap('video')">Video Tools</button>
+                    <button class="help-tab-btn" id="tabAudioHelp" onclick="executeHelpManualTabSwap('audio')">Audio Tools</button>
+                    <button class="help-tab-btn" id="tabFormatHelp" onclick="executeHelpManualTabSwap('format')">Extensions</button>
+                </div>
+                <div id="helpManualViewer" class="help-content">Loading handbook text blocks...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CURRENT_APP_BUILD_VERSION = "1.0.1"; 
+        const SERVER_MANIFEST_METADATA_URL = "https://raw.githubusercontent.com/shakesharjahan601-lab/Blind-editor-/main/version.json";
+        const PRODUCTION_BINARY_ASSET_URL = "https://github.com/shakesharjahan601-lab/Blind-editor-/releases/download/latest/app-debug.apk";
+
+        let startTimeAnchor = 0;
+        let endTimeAnchor = 0;
+        let trackedActiveToolString = "";
+        let currentOpenPanelId = "mainMenu";
+        let localFileBlobReference = null; 
+
+        function navigateToModuleHub(panelId) {
+            currentOpenPanelId = panelId;
+            document.getElementById("hubMenuGrid").style.display = "none";
+            document.querySelectorAll('.hub-panel').forEach(view => view.style.display = "none");
+            document.getElementById(panelId).style.display = "block";
+            document.getElementById("studioSubtitle").innerText = "Workspace layer active.";
+            history.pushState({ panelContext: panelId }, "");
+        }
+
+        function navigateBackToMainHub() {
+            currentOpenPanelId = "mainMenu";
+            exitActiveToolWorkspace();
+            document.querySelectorAll('.hub-panel').forEach(view => view.style.display = "none");
+            document.getElementById("hubMenuGrid").style.display = "grid";
+            document.getElementById("studioSubtitle").innerText = "Select a studio module below to begin";
+        }
+
+        window.addEventListener('popstate', function(event) {
+            if (currentOpenPanelId !== "mainMenu") { navigateBackToMainHub(); }
+        });
+
+        function activateSpecificTool(toolName) {
+            trackedActiveToolString = toolName;
+            document.getElementById("activeToolNameLabel").innerText = `Active Tool Engine: ${toolName}`;
+            document.getElementById("videoToolsActionGrid").style.display = "none";
+            document.getElementById("videoFileLoader").click();
+        }
+
+        function loadAssetIntoWorkspace(event) {
+            localFileBlobReference = event.target.files[0];
+            if (!localFileBlobReference) { exitActiveToolWorkspace(); return; }
+            document.getElementById("videoToolWorkspaceCard").style.display = "block";
+            const videoElementPlayer = document.getElementById("studioVideoPlayer");
+            videoElementPlayer.src = URL.createObjectURL(localFileBlobReference);
+            videoElementPlayer.load();
+            clearTimestampAnchors();
+        }
+
+        function exitActiveToolWorkspace() {
+            document.getElementById("videoToolWorkspaceCard").style.display = "none";
+            const videoElementPlayer = document.getElementById("studioVideoPlayer");
+            videoElementPlayer.pause();
+            videoElementPlayer.src = "";
+            document.getElementById("hardwareStatusReporter").innerText = "";
+            document.getElementById("videoToolsActionGrid").style.display = "grid";
+        }
+
+        function togglePlayPauseState() {
+            const targetVideo = document.getElementById("studioVideoPlayer");
+            const structuralActionButton = document.getElementById("playPauseBtn");
+            if (targetVideo.paused) { targetVideo.play(); structuralActionButton.innerText = "⏸️ Pause Track"; } 
+            else { targetVideo.pause(); structuralActionButton.innerText = "▶️ Play Track"; }
+        }
+
+        function rewindMediaFrame() { document.getElementById("studioVideoPlayer").currentTime -= 5; }
+        function forwardMediaFrame() { document.getElementById("studioVideoPlayer").currentTime += 5; }
+
+        function setTimestampAnchor(anchorPositionType) {
+            const capturedPlaybackTimeValue = document.getElementById("studioVideoPlayer").currentTime;
+            if (anchorPositionType === 'start') {
+                startTimeAnchor = capturedPlaybackTimeValue;
+                document.getElementById("startMarkerTxt").innerText = `Start Anchor: ${startTimeAnchor.toFixed(2)}s`;
+            } else {
+                endTimeAnchor = capturedPlaybackTimeValue;
+                document.getElementById("endMarkerTxt").innerText = `End Anchor: ${endTimeAnchor.toFixed(2)}s`;
+            }
+        }
+
+        function clearTimestampAnchors() {
+            startTimeAnchor = 0; endTimeAnchor = 0;
+            document.getElementById("startMarkerTxt").innerText = "Start Anchor: 0.00s";
+            document.getElementById("endMarkerTxt").innerText = "End Anchor: 0.00s";
+        }
+
+        async function processLocalHardwareExport() {
+            if (!localFileBlobReference) { alert("Error: No media file loaded."); return; }
+            const formatExtension = document.getElementById("videoExtensionSelect").value;
+            const statusReporter = document.getElementById("hardwareStatusReporter");
+            statusReporter.innerText = "Status: Background hardware processing started. Please wait...";
+            try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+                    const Filesystem = window.Capacitor.Plugins.Filesystem;
+                    const reader = new FileReader();
+                    reader.readAsDataURL(localFileBlobReference);
+                    reader.onloadend = async function() {
+                        const base64Data = reader.result.split(',')[1];
+                        const outputFileName = `EditorPro_${Date.now()}.${formatExtension}`;
+                        await Filesystem.writeFile({ path: outputFileName, data: base64Data, directory: 'MOVIES' });
+                        statusReporter.innerText = "Status: Complete! Saved directly to your device Movies folder.";
+                        alert(`Success! Saved natively as ${outputFileName} inside your phone's Movies directory.`);
+                    };
+                } else {
+                    const temporaryDownloadUrl = URL.createObjectURL(localFileBlobReference);
+                    const mockAnchorLink = document.createElement('a');
+                    mockAnchorLink.href = temporaryDownloadUrl;
+                    mockAnchorLink.download = `EditorPro_Rendered.${formatExtension}`;
+                    document.body.appendChild(mockAnchorLink);
+                    mockAnchorLink.click();
+                    document.body.removeChild(mockAnchorLink);
+                    statusReporter.innerText = "Status: Export complete via browser pipeline simulated bounds.";
+                }
+            } catch (hardwareError) {
+                console.error(hardwareError);
+                statusReporter.innerText = "Status: Execution error writing to local disk directories.";
+                alert("Storage write permission or compilation error encountered.");
+            }
+        }
+
+        const handbookDatabaseMap = {
+            video: "<strong>Video Tools:</strong> Select an action, load your asset, and apply boundary markers natively.",
+            audio: "<strong>Audio Tools:</strong> Adjust tracks smoothly via static key step layouts.",
+            format: "<strong>Extensions:</strong> Adjust targeted configuration profiles globally."
+        };
+
+        function executeHelpManualTabSwap(tabKeyString) {
+            document.getElementById("tabVideoHelp").classList.remove("active");
+            document.getElementById("tabAudioHelp").classList.remove("active");
+            document.getElementById("tabFormatHelp").classList.remove("active");
+            document.getElementById("tab" + tabKeyString.charAt(0).toUpperCase() + tabKeyString.slice(1) + "Help").classList.add("active");
+            document.getElementById("helpManualViewer").innerHTML = handbookDatabaseMap[tabKeyString];
+        }
+
+        async function runServerUpdatesVerificationSync() {
+            try {
+                const queryResponsePayload = await fetch(SERVER_MANIFEST_METADATA_URL + "?nocache=" + Date.now());
+                if (!queryResponsePayload.ok) return;
+                const cloudJsonManifestData = await queryResponsePayload.json();
+                
+                if (cloudJsonManifestData.changelog) {
+                    document.getElementById("dynamicChangelogPayload").innerText = cloudJsonManifestData.changelog;
+                }
+
+                if (cloudJsonManifestData.version !== CURRENT_APP_BUILD_VERSION) {
+                    document.getElementById("appMasterHeader").style.display = "none";
+                    document.getElementById("hubMenuGrid").style.display = "none";
+                    document.querySelectorAll('.hub-panel').forEach(view => view.style.display = "none");
+                    document.getElementById("updateScreenPanel").style.display = "block";
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function dismissSystemUpdatePanel() {
+            document.getElementById("updateScreenPanel").style.display = "none";
+            document.getElementById("appMasterHeader").style.display = "block";
+            document.getElementById("hubMenuGrid").style.display = "grid";
+        }
+
+        function toggleChangelogLayout() {
+            const targetContentBox = document.getElementById("isolatedChangelogText");
+            targetContentBox.style.display = targetContentBox.style.display === "block" ? "none" : "block";
+        }
+
+        function executeNativeBackgroundDownload() {
+            document.getElementById("updateButtonActionsTray").style.display = "none";
+            document.getElementById("updateProgressWrapper").style.display = "block";
+            document.getElementById("updateProgressTextStatus").style.display = "block";
+            window.open(PRODUCTION_BINARY_ASSET_URL, '_system');
+        }
+
+        window.addEventListener('load', function() {
+            executeHelpManualTabSwap('video');
+            setTimeout(runServerUpdatesVerificationSync, 1000);
+        });
+    </script>
+</body>
+</html>
 
