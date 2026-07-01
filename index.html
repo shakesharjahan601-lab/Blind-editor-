@@ -10,214 +10,257 @@
         h1 { color: #00e5ff; margin-bottom: 5px; }
         .subtitle { color: #888888; font-size: 14px; margin-bottom: 20px; }
 
-        /* Full-Screen Update Box Layout */
-        .update-box { display: none; background-color: #262626; border: 2px solid #00e5ff; padding: 20px; border-radius: 12px; margin: 15px 0 25px 0; text-align: left; }
-        .update-title { color: #00e5ff; font-weight: bold; font-size: 18px; margin-bottom: 8px; }
-        .update-desc { color: #ccc; font-size: 14px; margin-bottom: 20px; }
+        /* Master Core Menu Flow Controls */
+        .hub-menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin: 30px 0; }
+        .hub-btn { background-color: #252525; color: #00e5ff; border: 2px solid #333; padding: 25px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .hub-btn:active { background-color: #2a2a2a; border-color: #00e5ff; }
+
+        /* General Layout Visibility Wrappers */
+        .workspace-panel { display: none; text-align: left; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .btn-back { background-color: #383838; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* Interactive Grid Layout matrices */
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+        .tool-card-btn { background-color: #252525; color: #ffffff; border: 1px solid #333333; padding: 20px 10px; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; cursor: pointer; }
         
-        .btn-group { display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap; }
-        button { border: none; padding: 12px 18px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-view { background-color: #383838; color: #fff; }
-        .btn-later { background-color: transparent; color: #aaaaaa; border: 1px solid #444; }
-        .btn-update { background-color: #00e5ff; color: #121212; }
+        /* Accessible Workspace Controller Panel */
+        .media-box { background: #111; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: none; }
+        video { width: 100%; max-height: 220px; border-radius: 8px; background: #000; }
+        .accessible-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .control-btn { background-color: #333; color: #fff; border: 1px solid #444; padding: 12px 5px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .control-btn.active-mark { background-color: #00e5ff; color: #121212; }
+        .stamp-display { background: #222; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; display: flex; justify-content: space-between; color: #aaa; }
 
-        .changelog-panel { display: none; background: #1a1a1a; padding: 12px; border-radius: 6px; margin-top: 15px; border-left: 3px solid #00e5ff; font-size: 13px; color: #bbb; line-height: 1.6; }
-        .progress-wrapper { display: none; margin-top: 20px; background: #333; height: 10px; border-radius: 5px; overflow: hidden; }
-        .progress-fill { background: #00e5ff; height: 100%; width: 0%; transition: width 0.2s linear; }
-        .progress-txt { color: #00e5ff; font-size: 12px; margin-top: 5px; text-align: right; display: none; }
+        /* Dropdown Format Menus */
+        .settings-group { background: #252525; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        select { background: #333; color: #fff; border: 1px solid #555; padding: 8px; border-radius: 6px; font-size: 14px; width: 120px; }
 
-        /* Main App Content */
-        #mainAppContent { display: block; }
-        .tab-nav { display: flex; background-color: #1a1a1a; border-radius: 10px; padding: 5px; margin-bottom: 25px; gap: 5px; }
-        .tab-btn { flex: 1; background: none; color: #888888; padding: 10px; font-size: 14px; border-radius: 6px; margin: 0; }
-        .tab-btn.active { background-color: #2a2a2a; color: #00e5ff; }
-        .studio-panel { display: none; }
-        .studio-panel.active { display: block; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; }
-        .tool-card-btn { background-color: #252525; color: #ffffff; border: 1px solid #333333; padding: 20px 10px; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; }
-        .icon { font-size: 22px; }
-        .settings-card { background-color: #1a1a1a; padding: 15px; border-radius: 12px; text-align: left; margin-top: 15px; }
-        .settings-row { display: flex; justify-content: space-between; align-items: center; }
+        /* Tabbed Manual Elements */
+        .help-tabs { display: flex; gap: 5px; margin-bottom: 10px; background: #111; padding: 5px; border-radius: 6px; }
+        .help-tab-btn { flex: 1; background: none; border: none; color: #888; padding: 8px; font-size: 12px; cursor: pointer; }
+        .help-tab-btn.active { background: #333; color: #00e5ff; border-radius: 4px; }
+        .help-content { background: #1a1a1a; padding: 12px; border-radius: 6px; font-size: 13px; color: #ccc; line-height: 1.5; min-height: 60px; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Editor Pro</h1>
-        <div class="subtitle">Mobile Media Processing Studio</div>
+        <div id="studioSubtitle" class="subtitle">Select a studio module below to begin</div>
 
-        <div id="updateCard" class="update-box">
-            <div id="updateLabel" class="update-title">Update Found</div>
-            <div id="reminderLabel" style="color: #ffb300; font-size: 13px; font-weight: bold; margin-bottom: 8px; display: none;">⚠️ Update Reminder Active</div>
-            <div class="update-desc">A new version of the app is available for installation.</div>
-            
-            <div class="btn-group" id="btnGroup">
-                <button class="btn-view" onclick="toggleChangelog()">View Changes</button>
-                <button id="laterBtn" class="btn-later" onclick="dismissUpdateCard()">Later</button>
-                <button class="btn-update" onclick="startNativeDownload()">Update</button>
-            </div>
-
-            <div id="changelogBox" class="changelog-panel">
-                <strong>Changelog Updates:</strong><br>
-                • Implemented real Native file downloader.<br>
-                • Update layout strictly locks background screens.
-            </div>
-
-            <div id="progressContainer" class="progress-wrapper"><div id="progressBar" class="progress-fill"></div></div>
-            <div id="progressStatus" class="progress-txt">Downloading: 0%</div>
+        <div id="hubMenuGrid" class="hub-menu-grid">
+            <button class="hub-btn" onclick="openStudioHub('videoHub')"><span>🎬</span> Video Tools</button>
+            <button class="hub-btn" onclick="openStudioHub('audioHub')"><span>🎵</span> Audio Tools</button>
+            <button class="hub-btn" onclick="openStudioHub('settingsHub')"><span>⚙️</span> Settings & Help</button>
         </div>
 
-        <div id="mainAppContent">
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="switchStudioTab('videoTab', this)">Video Tools</button>
-                <button class="tab-btn" onclick="switchStudioTab('audioTab', this)">Audio Tools</button>
-                <button class="tab-btn" onclick="switchStudioTab('settingsTab', this)">Settings</button>
+        <div id="videoHub" class="workspace-panel">
+            <div class="nav-header">
+                <h3 style="margin:0; color:#00e5ff;">Video Workspace</h3>
+                <button class="btn-back" onclick="navigateBackHome()">⬅️ Back</button>
             </div>
 
-            <div id="videoTab" class="studio-panel active">
-                <div class="tools-grid">
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Insert Clip')"><span class="icon">➕</span>Insert Clip</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Merge Videos')"><span class="icon">🔀</span>Merge</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Trim Video')"><span class="icon">✂️</span>Trim</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Video to Audio')"><span class="icon">🎵</span>To Audio</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Noise Removal')"><span class="icon">🧹</span>Noise Fix</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Add Music')"><span class="icon">🎼</span>Music</button>
-                    <button class="tool-card-btn" style="grid-column: span 2;" onclick="triggerEngineTool('Compress Video')"><span class="icon">📦</span>Compress</button>
+            <div id="mediaWorkspace" class="media-box">
+                <video id="studioVideoPlayer" aria-label="Video Preview Track Player Window"></video>
+                <div class="stamp-display">
+                    <span id="startMarkerTxt">Start: 0.00s</span>
+                    <span id="endMarkerTxt">End: 0.00s</span>
+                </div>
+                <div class="accessible-controls">
+                    <button class="control-btn" onclick="rewindMedia()" aria-label="Rewind video 5 seconds">⏪ Rewind</button>
+                    <button class="control-btn" id="playPauseBtn" onclick="togglePlayPause()" aria-label="Play or Pause video">▶️ Play</button>
+                    <button class="control-btn" onclick="forwardMedia()" aria-label="Fast forward video 5 seconds">⏩ Forward</button>
+                    <button class="control-btn active-mark" onclick="setMark('start')" aria-label="Set video cut opening timestamp handle">📍 Set Start</button>
+                    <button class="control-btn active-mark" onclick="setMark('end')" aria-label="Set video cut closing timestamp handle">📍 Set End</button>
+                    <button class="control-btn" onclick="clearMarkers()" aria-label="Clear active markers timestamps">🧹 Clear</button>
+                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="saveProcessedMedia()" aria-label="Export and save finalized clip">💾 Save and Export Video</button>
                 </div>
             </div>
 
-            <div id="audioTab" class="studio-panel">
-                <div class="tools-grid">
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Insert Audio Clip')"><span class="icon">🎙️</span>Insert</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Merge Audios')"><span class="icon">🔗</span>Merge</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Trim Audio')"><span class="icon">🎚️</span>Trim</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Audio Noise Removal')"><span class="icon">🤫</span>Noise Fix</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Add Music Overlay')"><span class="icon">🎹</span>Music</button>
-                    <button class="tool-card-btn" onclick="triggerEngineTool('Compress Audio')"><span class="icon">🗜️</span>Compress</button>
+            <input type="file" id="videoFileLoader" accept="video/mp4,video/mkv,video/webm" style="display: none;" onchange="loadMediaToWorkspace(event)">
+
+            <div class="tools-grid">
+                <button class="tool-card-btn" onclick="triggerFilePicker('Trim')"><span>✂️</span>Trim Video</button>
+                <button class="tool-card-btn" onclick="triggerFilePicker('Insert')"><span>➕</span>Insert Clip</button>
+                <button class="tool-card-btn" onclick="triggerFilePicker('Merge')"><span>🔀</span>Merge Clips</button>
+                <button class="tool-card-btn" onclick="triggerFilePicker('Extract')"><span>🎵</span>To Audio</button>
+                <button class="tool-card-btn" onclick="triggerFilePicker('Noise')"><span>🧹</span>Noise Fix</button>
+                <button class="tool-card-btn" onclick="triggerFilePicker('Music')"><span>🎼</span>Add Music</button>
+            </div>
+        </div>
+
+        <div id="audioHub" class="workspace-panel">
+            <div class="nav-header">
+                <h3 style="margin:0; color:#00e5ff;">Audio Workspace</h3>
+                <button class="btn-back" onclick="navigateBackHome()">⬅️ Back</button>
+            </div>
+            <div class="tools-grid">
+                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🎙️</span>Insert Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🔗</span>Merge Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🎚️</span>Trim Audio</button>
+                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🤫</span>Noise Fix</button>
+                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🎹</span>Music Overlay</button>
+                <button class="tool-card-btn" onclick="alert('Audio tools feature configuration.')"><span>🗜️</span>Compress Audio</button>
+            </div>
+        </div>
+
+        <div id="settingsHub" class="workspace-panel">
+            <div class="nav-header">
+                <h3 style="margin:0; color:#00e5ff;">Settings Studio</h3>
+                <button class="btn-back" onclick="navigateBackHome()">⬅️ Back</button>
+            </div>
+
+            <div class="settings-group">
+                <h4 style="margin:0 0 15px 0; color:#00e5ff; font-size:15px;">Default Export Formats</h4>
+                <div class="settings-row">
+                    <label for="videoExtensionSelect" style="font-size:14px;">Video Extension:</label>
+                    <select id="videoExtensionSelect">
+                        <option value="mp4" selected>MP4 (Default)</option>
+                        <option value="mkv">MKV</option>
+                        <option value="webm">WEBM</option>
+                        <option value="avi">AVI</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <label for="audioExtensionSelect" style="font-size:14px;">Audio Extension:</label>
+                    <select id="audioExtensionSelect">
+                        <option value="mp3" selected>MP3 (Default)</option>
+                        <option value="wav">WAV</option>
+                        <option value="aac">AAC</option>
+                        <option value="m4a">M4A</option>
+                    </select>
                 </div>
             </div>
 
-            <div id="settingsTab" class="studio-panel">
-                <div class="settings-card">
-                    <div class="settings-row">
-                        <div>
-                            <strong style="color: #00e5ff;">Check for Updates</strong>
-                        </div>
-                        <input type="checkbox" id="updateToggle" checked onchange="handleToggleChange()" style="transform: scale(1.3); accent-color: #00e5ff; cursor: pointer;">
-                    </div>
-                    <div id="manualCheckArea" style="margin-top: 15px; display: none;">
-                        <button class="btn-update" style="width: 100%;" onclick="forceManualCheck()">Check Updates Instantly</button>
-                    </div>
+            <div class="settings-group">
+                <h4 style="margin:0 0 10px 0; color:#00e5ff; font-size:15px;">User Guides & Help Manual</h4>
+                <div class="help-tabs">
+                    <button class="help-tab-btn active" id="tabVideoHelp" onclick="switchHelpTab('video')">Video Tools</button>
+                    <button class="help-tab-btn" id="tabAudioHelp" onclick="switchHelpTab('audio')">Audio Tools</button>
+                    <button class="help-tab-btn" id="tabFormatHelp" onclick="switchHelpTab('format')">Extensions</button>
+                </div>
+                <div id="helpManualViewer" class="help-content">
+                    Select a tool feature type button above to learn step-by-step operating instructions.
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const CURRENT_VERSION = "1.0.0";
-        const MANIFEST_UPDATE_URL = "https://raw.githubusercontent.com/shakesharjahan601-lab/Blind-editor-/main/version.json";
-        const DOWNLOAD_APK_URL = "https://github.com/shakesharjahan601-lab/Blind-editor-/releases/download/latest/app-debug.apk";
+        let startTime = 0;
+        let endTime = 0;
+        let selectedToolAction = "";
 
-        function switchStudioTab(tabId, element) {
-            document.querySelectorAll('.studio-panel').forEach(panel => panel.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            element.classList.add('active');
-        }
-
-        function triggerEngineTool(toolName) { alert(toolName + " Tool Selected."); }
-
-        async function checkUpdates() {
-            const isAutoCheckEnabled = document.getElementById("updateToggle").checked;
-            if (!isAutoCheckEnabled) return;
-
-            try {
-                const response = await fetch(`${MANIFEST_UPDATE_URL}?nocache=${Date.now()}`);
-                if (!response.ok) return;
-                
-                const data = await response.json();
-                
-                if (data.version !== CURRENT_VERSION) {
-                    let laterCount = parseInt(localStorage.getItem("update_later_count") || "0");
-                    if (laterCount >= 2) {
-                        document.getElementById("laterBtn").style.display = "none";
-                        document.getElementById("reminderLabel").innerText = "🚨 Mandatory Update Required";
-                        document.getElementById("reminderLabel").style.display = "block";
-                    } else if (laterCount > 0) {
-                        document.getElementById("reminderLabel").innerText = `⚠️ Reminder (${laterCount}/2)`;
-                        document.getElementById("reminderLabel").style.display = "block";
-                    }
-                    document.getElementById("updateLabel").innerText = `Version ${data.version} Available`;
-                    document.getElementById("mainAppContent").style.display = "none"; 
-                    document.getElementById("updateCard").style.display = "block";
-                }
-            } catch (error) { console.error(error); }
-        }
-
-        function toggleChangelog() {
-            const box = document.getElementById("changelogBox");
-            box.style.display = box.style.display === "block" ? "none" : "block";
-        }
-
-        function dismissUpdateCard() {
-            let laterCount = parseInt(localStorage.getItem("update_later_count") || "0");
-            laterCount += 1;
-            localStorage.setItem("update_later_count", laterCount.toString());
-            document.getElementById("updateCard").style.display = "none";
-            document.getElementById("mainAppContent").style.display = "block";
-        }
-
-        function handleToggleChange() {
-            const isChecked = document.getElementById("updateToggle").checked;
-            document.getElementById("manualCheckArea").style.display = isChecked ? "none" : "block";
-        }
-
-        function forceManualCheck() {
-            document.getElementById("updateToggle").checked = true;
-            checkUpdates();
-            document.getElementById("updateToggle").checked = false;
-        }
-
-        function startNativeDownload() {
-            document.getElementById("btnGroup").style.display = "none"; // Hide buttons while downloading
-            document.getElementById("progressContainer").style.display = "block";
-            document.getElementById("progressStatus").style.display = "block";
+        // Universal Navigation Hub Router System
+        function openStudioHub(hubId) {
+            document.getElementById("hubMenuGrid").style.display = "none";
+            document.querySelectorAll('.workspace-panel').forEach(panel => panel.style.display = "none");
             
-            // Native real-time fetch tracker
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', DOWNLOAD_APK_URL, true);
-            xhr.responseType = 'blob'; // Download as file
-            
-            xhr.onprogress = function(event) {
-                if (event.lengthComputable) {
-                    const percentComplete = Math.round((event.loaded / event.total) * 100);
-                    document.getElementById("progressBar").style.width = percentComplete + "%";
-                    document.getElementById("progressStatus").innerText = `Downloading Data: ${percentComplete}%`;
-                }
-            };
-            
-            xhr.onload = function() {
-                if (this.status === 200) {
-                    document.getElementById("progressStatus").innerText = "Download complete! Handing over to Android...";
-                    localStorage.removeItem("update_later_count");
-                    // Trigger Android's package installer intent
-                    window.open(DOWNLOAD_APK_URL, '_system');
-                } else {
-                    document.getElementById("progressStatus").innerText = "Download failed. Please check connection.";
-                    document.getElementById("btnGroup").style.display = "flex";
-                }
-            };
+            document.getElementById(hubId).style.display = "block";
+            document.getElementById("studioSubtitle").innerText = "Workspace active. Press Back button to return to home screen.";
 
-            xhr.onerror = function() {
-                document.getElementById("progressStatus").innerText = "Network Error.";
-                document.getElementById("btnGroup").style.display = "flex";
-            };
-
-            xhr.send();
+            // Standardize history state tracking variables to intercept system device keys
+            history.pushState({ activePanel: hubId }, "");
         }
 
-        window.onload = function() { setTimeout(checkUpdates, 500); };
+        function navigateBackHome() {
+            document.querySelectorAll('.workspace-panel').forEach(panel => panel.style.display = "none");
+            document.getElementById("mediaWorkspace").style.display = "none";
+            
+            document.getElementById("hubMenuGrid").style.display = "grid";
+            document.getElementById("studioSubtitle").innerText = "Select a studio module below to begin";
+        }
+
+        // Synchronize Native Device Physical Keys and Swipe Gesture Events
+        window.addEventListener('popstate', function(event) {
+            // Intercept standard phone navigation requests smoothly back to system board grid maps
+            navigateBackHome();
+        });
+
+        // Accessible Trim Operations Management Engine Logic
+        function triggerFilePicker(actionName) {
+            selectedToolAction = actionName;
+            document.getElementById("videoFileLoader").click();
+        }
+
+        function loadMediaToWorkspace(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById("mediaWorkspace").style.display = "block";
+            const videoElement = document.getElementById("studioVideoPlayer");
+            videoElement.src = URL.createObjectURL(file);
+            videoElement.load();
+            
+            // Re-zero parameters out on file change events
+            startTime = 0;
+            endTime = 0;
+            clearMarkers();
+        }
+
+        function togglePlayPause() {
+            const video = document.getElementById("studioVideoPlayer");
+            const btn = document.getElementById("playPauseBtn");
+            if (video.paused) {
+                video.play();
+                btn.innerText = "⏸️ Pause";
+            } else {
+                video.pause();
+                btn.innerText = "▶️ Play";
+            }
+        }
+
+        function rewindMedia() { document.getElementById("studioVideoPlayer").currentTime -= 5; }
+        function forwardMedia() { document.getElementById("studioVideoPlayer").currentTime += 5; }
+
+        function setMark(type) {
+            const currentTime = document.getElementById("studioVideoPlayer").currentTime;
+            if (type === 'start') {
+                startTime = currentTime;
+                document.getElementById("startMarkerTxt").innerText = `Start: ${startTime.toFixed(2)}s`;
+            } else {
+                endTime = currentTime;
+                document.getElementById("endMarkerTxt").innerText = `End: ${endTime.toFixed(2)}s`;
+            }
+        }
+
+        function clearMarkers() {
+            startTime = 0;
+            endTime = 0;
+            document.getElementById("startMarkerTxt").innerText = "Start: 0.00s";
+            document.getElementById("endMarkerTxt").innerText = "End: 0.00s";
+        }
+
+        function saveProcessedMedia() {
+            const targetVideoExt = document.getElementById("videoExtensionSelect").value;
+            alert(`Media Render Engine Context Initialized!\nAction: ${selectedToolAction}\nFrom: ${startTime.toFixed(2)}s to ${endTime.toFixed(2)}s\nTarget Output Format Profile: .${targetVideoExt}`);
+        }
+
+        // Tabbed Dynamic Documentation Manual Content String Databases
+        const helpDatabase = {
+            video: "<strong>Video Trimming Operations:</strong> Choose a file from storage. Tap Play/Pause or jump through the timeline using the Forward and Rewind buttons. Tap 'Set Start' and 'Set End' at specific intervals to target frame timestamps accurately without layout screen reading interruption constraints.",
+            audio: "<strong>Audio Sync & Overlays:</strong> Import background vocal tracks or ambient music files directly into the sound matrix. Controls use targeted step parameters ideal for navigating clear frequencies smoothly.",
+            format: "<strong>System Format Output Adjustments:</strong> Modify target video and audio file container format strings inside the settings matrix dropdown layout profile cards before hitting export profiles."
+        };
+
+        function switchHelpTab(tabKey) {
+            document.getElementById("tabVideoHelp").classList.remove("active");
+            document.getElementById("tabAudioHelp").classList.remove("active");
+            document.getElementById("tabFormatHelp").classList.remove("active");
+
+            if (tabKey === 'video') document.getElementById("tabVideoHelp").classList.add("active");
+            if (tabKey === 'audio') document.getElementById("tabAudioHelp").classList.add("active");
+            if (tabKey === 'format') document.getElementById("tabFormatHelp").classList.add("active");
+
+            document.getElementById("helpManualViewer").innerHTML = helpDatabase[tabKey];
+        }
+
+        // Instantiate Default Framework Text Strings on App Initial Load Engine Context State
+        window.onload = function() {
+            switchHelpTab('video');
+        };
     </script>
 </body>
 </html>
