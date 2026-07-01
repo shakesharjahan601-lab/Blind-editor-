@@ -87,6 +87,7 @@ jobs:
           files: android/app/build/outputs/apk/debug/app-debug.apk
           tag_name: latest
           name: "Editor Pro Production Build"
-          body: "This is the permanent cloud-compiled APK file for Editor Pro."
+          body: "This is the permanent cloud-compiled APK file for Editor Pro containing your layout tabs."
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
