@@ -40,6 +40,19 @@ jobs:
           npx cap init "Editor Pro" "com.shakesharjahan.editor" --web-dir=www
           npx cap add android
 
+      - name: Inject Strict Android Storage Permissions
+        run: |
+          MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
+          if [ -f "$MANIFEST_PATH" ]; then
+            # Insert real hardware reading, writing, and management storage permission nodes
+            sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" \/>' $MANIFEST_PATH
+            sed -i '/<application/i \    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" \/>' $MANIFEST_PATH
+            sed -i '/<application/i \    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" \/>' $MANIFEST_PATH
+            
+            # Allow legacy external storage operations inside the application tag
+            sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/g' $MANIFEST_PATH
+          fi
+
       - name: Inject Layout Resources and Fallbacks
         run: |
           mkdir -p android/app/src/main/res/values
@@ -82,7 +95,7 @@ jobs:
           files: android/app/build/outputs/apk/debug/app-debug.apk
           tag_name: latest
           name: "Editor Pro Production Build"
-          body: "This build contains the new native background downloader and local hardware processing capability hooks."
+          body: "This build contains full storage permissions and local file writing capabilities unblocked."
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
