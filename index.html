@@ -97,10 +97,8 @@
                     <button class="control-btn active-mark" onclick="setTimestampAnchor('start')">📍 Set Start</button>
                     <button class="control-btn active-mark" onclick="setTimestampAnchor('end')">📍 Set End</button>
                     <button class="control-btn" onclick="clearTimestampAnchors()">🧹 Clear</button>
-                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save and Export Video Natively</button>
+                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save and Export Video Native</button>
                 </div>
-                
-                <div id="downloadActionLinkContainer" style="margin-top: 15px; text-align: center;"></div>
             </div>
 
             <input type="file" id="videoFileLoader" accept="video/mp4" style="display: none;" onchange="loadAssetIntoWorkspace(event)">
@@ -221,7 +219,6 @@
             videoElementPlayer.pause();
             videoElementPlayer.src = "";
             document.getElementById("hardwareStatusReporter").innerText = "";
-            document.getElementById("downloadActionLinkContainer").innerHTML = "";
             document.getElementById("videoToolsActionGrid").style.display = "grid";
         }
 
@@ -252,25 +249,39 @@
             document.getElementById("endMarkerTxt").innerText = "End Anchor: 0.00s";
         }
 
-        // STABLE STREAM DOWNLOAD ACTION FOR ACCESSIBILITY STABILITY
-        function processLocalHardwareExport() {
+        // FORCEFUL VISUAL WEB EXPORTER SYSTEM
+        async function processLocalHardwareExport() {
             if (!localFileBlobReference) { alert("Error: No media file loaded."); return; }
             const formatExtension = document.getElementById("videoExtensionSelect").value;
             const statusReporter = document.getElementById("hardwareStatusReporter");
-            const linkContainer = document.getElementById("downloadActionLinkContainer");
             
-            statusReporter.innerText = "Status: Complete! A download button has been generated below.";
+            statusReporter.innerText = "Status: Exporting media track layout. Triggering browser download...";
+            
+            try {
+                // Generate a true binary link directly out of the memory block
+                const temporaryDownloadUrl = URL.createObjectURL(localFileBlobReference);
+                
+                // Create a temporary structural download link
+                const mockAnchorLink = document.createElement('a');
+                mockAnchorLink.href = temporaryDownloadUrl;
+                mockAnchorLink.download = `EditorPro_Exported.${formatExtension}`;
+                
+                // Attach to the interface view momentarily and fire the click action
+                document.body.appendChild(mockAnchorLink);
+                mockAnchorLink.click();
+                
+                // Clean up memory space
+                setTimeout(() => {
+                    document.body.removeChild(mockAnchorLink);
+                    URL.revokeObjectURL(temporaryDownloadUrl);
+                }, 100);
 
-            // Create a high-contrast physical link button that screen readers can easily scan
-            const temporaryDownloadUrl = URL.createObjectURL(localFileBlobReference);
-            linkContainer.innerHTML = `
-                <a href="${temporaryDownloadUrl}" 
-                   download="EditorPro_Export_${Date.now()}.${formatExtension}" 
-                   style="display: block; background-color: #00e5ff; color: #121212; font-weight: bold; text-decoration: none; padding: 18px; border-radius: 8px; font-size: 16px; border: 2px solid #fff;"
-                   aria-label="Download compiled video file track link">
-                   ⬇️ Tap Here to Save File to Device
-                </a>
-            `;
+                statusReporter.innerText = "Status: Export complete! Check your device system notifications shade.";
+            } catch (hardwareError) {
+                console.error(hardwareError);
+                statusReporter.innerText = "Status: Export block encounter.";
+                alert("Could not process video download.");
+            }
         }
 
         const handbookDatabaseMap = {
@@ -331,4 +342,3 @@
     </script>
 </body>
 </html>
-
