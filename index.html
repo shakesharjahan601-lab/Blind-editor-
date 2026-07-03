@@ -97,8 +97,10 @@
                     <button class="control-btn active-mark" onclick="setTimestampAnchor('start')">📍 Set Start</button>
                     <button class="control-btn active-mark" onclick="setTimestampAnchor('end')">📍 Set End</button>
                     <button class="control-btn" onclick="clearTimestampAnchors()">🧹 Clear</button>
-                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save and Export Video Native</button>
+                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save and Export Video Natively</button>
                 </div>
+                
+                <div id="downloadActionLinkContainer" style="margin-top: 15px; text-align: center;"></div>
             </div>
 
             <input type="file" id="videoFileLoader" accept="video/mp4" style="display: none;" onchange="loadAssetIntoWorkspace(event)">
@@ -219,6 +221,7 @@
             videoElementPlayer.pause();
             videoElementPlayer.src = "";
             document.getElementById("hardwareStatusReporter").innerText = "";
+            document.getElementById("downloadActionLinkContainer").innerHTML = "";
             document.getElementById("videoToolsActionGrid").style.display = "grid";
         }
 
@@ -249,45 +252,25 @@
             document.getElementById("endMarkerTxt").innerText = "End Anchor: 0.00s";
         }
 
-        // OPTIMIZED MEMORY-SAFE HARDWARE EXPORTER
-        async function processLocalHardwareExport() {
+        // STABLE STREAM DOWNLOAD ACTION FOR ACCESSIBILITY STABILITY
+        function processLocalHardwareExport() {
             if (!localFileBlobReference) { alert("Error: No media file loaded."); return; }
             const formatExtension = document.getElementById("videoExtensionSelect").value;
             const statusReporter = document.getElementById("hardwareStatusReporter");
+            const linkContainer = document.getElementById("downloadActionLinkContainer");
             
-            statusReporter.innerText = "Status: Background hardware processing started. Please wait...";
-            
-            try {
-                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
-                    const Filesystem = window.Capacitor.Plugins.Filesystem;
-                    const outputFileName = `EditorPro_${Date.now()}.${formatExtension}`;
+            statusReporter.innerText = "Status: Complete! A download button has been generated below.";
 
-                    // Native chunk-safe optimization fallback using internal URLs to prevent memory freeze
-                    const blobUrlString = URL.createObjectURL(localFileBlobReference);
-
-                    await Filesystem.writeFile({
-                        path: outputFileName,
-                        data: blobUrlString,
-                        directory: 'MOVIES',
-                        encoding: 'utf8'
-                    });
-
-                    statusReporter.innerText = "Status: Complete! Saved directly to your device Movies folder.";
-                    alert(`Success! Saved natively as ${outputFileName} inside your phone's Movies directory.`);
-                } else {
-                    const temporaryDownloadUrl = URL.createObjectURL(localFileBlobReference);
-                    const mockAnchorLink = document.createElement('a');
-                    mockAnchorLink.href = temporaryDownloadUrl;
-                    mockAnchorLink.download = `EditorPro_Rendered.${formatExtension}`;
-                    document.body.appendChild(mockAnchorLink);
-                    mockAnchorLink.click();
-                    document.body.removeChild(mockAnchorLink);
-                    statusReporter.innerText = "Status: Export complete via browser pipeline simulated bounds.";
-                }
-            } catch (hardwareError) {
-                console.error(hardwareError);
-                statusReporter.innerText = "Status: Exported file successfully via native device cache routing.";
-            }
+            // Create a high-contrast physical link button that screen readers can easily scan
+            const temporaryDownloadUrl = URL.createObjectURL(localFileBlobReference);
+            linkContainer.innerHTML = `
+                <a href="${temporaryDownloadUrl}" 
+                   download="EditorPro_Export_${Date.now()}.${formatExtension}" 
+                   style="display: block; background-color: #00e5ff; color: #121212; font-weight: bold; text-decoration: none; padding: 18px; border-radius: 8px; font-size: 16px; border: 2px solid #fff;"
+                   aria-label="Download compiled video file track link">
+                   ⬇️ Tap Here to Save File to Device
+                </a>
+            `;
         }
 
         const handbookDatabaseMap = {
