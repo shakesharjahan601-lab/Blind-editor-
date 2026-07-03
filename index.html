@@ -48,7 +48,7 @@
 
         <div id="updateScreenPanel" class="update-box-panel">
             <div class="update-title">System Update Required</div>
-            <div class="update-desc">An optimized production build containing critical screen reader accessibility tracking patches is ready for installation.</div>
+            <div class="update-desc">An optimized production build is ready for installation.</div>
             
             <div class="btn-group" id="updateButtonActionsTray">
                 <button class="btn-back" onclick="toggleChangelogLayout()">View Changes</button>
@@ -97,7 +97,7 @@
                     <button class="control-btn active-mark" onclick="setTimestampAnchor('start')">📍 Set Start</button>
                     <button class="control-btn active-mark" onclick="setTimestampAnchor('end')">📍 Set End</button>
                     <button class="control-btn" onclick="clearTimestampAnchors()">🧹 Clear</button>
-                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save and Export Video Native</button>
+                    <button class="control-btn active-mark" style="grid-column: span 3; background:#00e5ff; color:#121212; font-size:15px; margin-top:5px;" onclick="processLocalHardwareExport()">💾 Save Marks into App Workspace</button>
                 </div>
             </div>
 
@@ -249,39 +249,22 @@
             document.getElementById("endMarkerTxt").innerText = "End Anchor: 0.00s";
         }
 
-        // FORCEFUL VISUAL WEB EXPORTER SYSTEM
-        async function processLocalHardwareExport() {
-            if (!localFileBlobReference) { alert("Error: No media file loaded."); return; }
-            const formatExtension = document.getElementById("videoExtensionSelect").value;
+        // ACCESSIBLE LOCAL WORKSPACE STATE ENFORCER
+        function processLocalHardwareExport() {
             const statusReporter = document.getElementById("hardwareStatusReporter");
             
-            statusReporter.innerText = "Status: Exporting media track layout. Triggering browser download...";
+            // Log project cutting values safely in local session storage instead of hitting broken downloader pipelines
+            const projectMetadata = {
+                tool: trackedActiveToolString,
+                start: startTimeAnchor.toFixed(2),
+                end: endTimeAnchor.toFixed(2),
+                format: document.getElementById("videoExtensionSelect").value
+            };
             
-            try {
-                // Generate a true binary link directly out of the memory block
-                const temporaryDownloadUrl = URL.createObjectURL(localFileBlobReference);
-                
-                // Create a temporary structural download link
-                const mockAnchorLink = document.createElement('a');
-                mockAnchorLink.href = temporaryDownloadUrl;
-                mockAnchorLink.download = `EditorPro_Exported.${formatExtension}`;
-                
-                // Attach to the interface view momentarily and fire the click action
-                document.body.appendChild(mockAnchorLink);
-                mockAnchorLink.click();
-                
-                // Clean up memory space
-                setTimeout(() => {
-                    document.body.removeChild(mockAnchorLink);
-                    URL.revokeObjectURL(temporaryDownloadUrl);
-                }, 100);
-
-                statusReporter.innerText = "Status: Export complete! Check your device system notifications shade.";
-            } catch (hardwareError) {
-                console.error(hardwareError);
-                statusReporter.innerText = "Status: Export block encounter.";
-                alert("Could not process video download.");
-            }
+            localStorage.setItem("EditorPro_ActiveProject", JSON.stringify(projectMetadata));
+            
+            statusReporter.innerText = `Status: Marks saved successfully! Trim range: ${projectMetadata.start}s to ${projectMetadata.end}s locked in app workspace.`;
+            alert(`Project state saved directly inside your app workspace!\nTool: ${projectMetadata.tool}\nTimestamps: ${projectMetadata.start}s - ${projectMetadata.end}s`);
         }
 
         const handbookDatabaseMap = {
